@@ -1,10 +1,11 @@
 #include "Strings.h"
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 
 // This implementation could definitely be better, but for now simply
 // exactly fitting the size of the buffer to the string is probably just fine
-int string_resize(string* str, int size) {
+int string_resize(string* str, unsigned int size) {
     str->len = size;
     str->__memsize = size + 1;
 
@@ -23,12 +24,6 @@ int string_resize(string* str, int size) {
     return 0;
 }
 
-int string_free(string* str) {
-    free(str->str);
-    string_init(*str);
-    return 0;
-}
-
 int string_copy(string* dest, string* src) {
     string_resize(dest, src->len);
     memcpy(dest->str, src->str, src->len);
@@ -42,14 +37,14 @@ int string_concat(string* dest, string* base, string* add) {
     return 0;
 }
 
-int string_substring(string* dest, string* src, int from, int to) {
+int string_substring(string* dest, string* src, unsigned int from, unsigned int to) {
     if (to - from < 0) {
         printf("string_substring::Range Error::upper bound is less than lower bound\n");
         return -1;
     } else if (to == from) {
         // If the bounds are the same, it will just return an empty string,
         // which is signfified by the string pointer being NULL
-        string_free(dest);
+        STRING_FREE(*dest);
         return 0;
     } else if (to > src->len) {
         printf("string_substring::Range Error::Index Out of Bounds would have occurred\n");
@@ -75,16 +70,28 @@ int string_find(string* src, string* find) {
     return -1;
 }
 
-int string_insert(string* dest, string* insert, int from) {
+int string_compare(string* str1, string* str2) {
+    if (str1->len == str2->len) {
+        if (memcmp(str1->str, str2->str, str1->len) == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+int string_insert(string* dest, string* insert, unsigned int from) {
     string lastThird;
-    string_init(lastThird);
+    STRING_INIT(lastThird);
 
     string_substring(&lastThird, dest, from, dest->len);
     string_resize(dest, dest->len + insert->len);
     memcpy(dest->str + from, insert->str, insert->len);
     memcpy(dest->str + from + insert->len, lastThird.str, lastThird.len);
 
-    string_free(&lastThird);
+    STRING_FREE(lastThird);
     return 0;
 }
 
@@ -95,7 +102,7 @@ int string_find_replace(string* src, string* find, string* replace) {
         return false;
     } else {
         string lastThird;
-        string_init(lastThird);
+        STRING_INIT(lastThird);
 
         string_substring(&lastThird, src, index + find->len, src->len);
         string_resize(src, src->len - find->len + replace->len);
@@ -103,7 +110,7 @@ int string_find_replace(string* src, string* find, string* replace) {
         memcpy(src->str + index, replace->str, replace->len);
         memcpy(src->str + index + replace->len, lastThird.str, lastThird.len);
 
-        string_free(&lastThird);
+        STRING_FREE(lastThird);
         return true;
     }
 }
