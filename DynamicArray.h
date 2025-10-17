@@ -4,6 +4,7 @@
 #include "Strings.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef struct DynamicArray {
     // The buffer itself
@@ -35,6 +36,10 @@ int dynamic_array_append(DynamicArray* arr, void* data);
 typedef struct DynamicArrayType {
     string type;
     unsigned int typeID;
+
+    // If true, simply cast your data to a void pointer to pass it directly
+    // If false, pass a reference to your union, struct, or enum into the append function
+    bool passByValue;
 } DynamicArrayType;
 
 // This is needed to get floating point numbers to pass properly into the append function
@@ -61,7 +66,7 @@ typedef union FloatingPointData {
 // necessary for the dynamic_array functions to work
 int dynamic_array_registry_setup(void);
 
-int dynamic_array_registry_type_append(string* type);
+int dynamic_array_registry_type_append(string* type, bool passByValue);
 
 // Pass in a string of the types name, and it returns the id of that type, if it finds it
 unsigned int dynamic_array_registry_get_typeID(string* type);

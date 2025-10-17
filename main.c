@@ -9,7 +9,7 @@ DYNAMIC_ARRAY_REGISTRY_ENABLE
 
 int main(void) {
     dynamic_array_registry_setup();
-    dynamic_array_registry_type_append(&STRING("DynamicArray"));
+    dynamic_array_registry_type_append(&STRING("DynamicArray"), false);
 
     printf("Registry Table:\n");
     for (int i = 0; i < typeRegistryLen; i++) {
