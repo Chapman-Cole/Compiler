@@ -46,6 +46,14 @@ int dynamic_array_remove(DynamicArray* arr, unsigned int index);
 // as bounds of the src array
 int dynamic_array_subset(DynamicArray* dest, DynamicArray* src, unsigned int from, unsigned int to);
 
+// Adds all of the elements to the dest array at the specified index, pushing the elements at and after that index to the right
+// It is very important for this function that the dest and src arrays have the same type
+int dynamic_array_insert_array(DynamicArray* dest, DynamicArray* src, unsigned int index);
+
+// Removes the specified selection, with from being inclusive bottom range, and to being the exclusive
+// top range
+int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigned int to);
+
 typedef struct DynamicArrayType {
     string type;
     unsigned int typeID;

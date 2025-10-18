@@ -1,0 +1,13 @@
+profile : default = {
+  src = [
+    main.c,
+    DynamicArray.c,
+    Strings.c
+  ]
+
+  compilerFormat = [gcc/clang]
+
+  compilerPath = [clang]
+
+  out = [main]
+}

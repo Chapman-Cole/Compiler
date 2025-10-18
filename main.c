@@ -39,6 +39,20 @@ int main(void) {
 
     dynamic_array_append(&arr3, &arr);
     dynamic_array_append(&arr3, &arr2);
+
+    DynamicArray intAppender;
+    dynamic_array_init(&intAppender, sizeof(int), &STRING("int"));
+    // 69, 128, 82
+    dynamic_array_append(&intAppender, (void*)8);
+    dynamic_array_append(&intAppender, (void*)9);
+
+    dynamic_array_insert_array(&arr, &intAppender, 3);
+
+    dynamic_array_remove_selection(&arr, 1, 3);
+    dynamic_array_remove_selection(&arr, 0, arr.len);
+    dynamic_array_pop(&arr);
+    dynamic_array_remove(&arr, 0);
+    dynamic_array_append(&arr, (void*)24);
     
     printf("type: %s\n", DYNAMIC_ARRAY_TYPE(arr3.type).str);
     printf("type: %s | ", DYNAMIC_ARRAY_TYPE(arr.type).str);
@@ -54,5 +68,6 @@ int main(void) {
     dynamic_array_free(&arr);
     dynamic_array_free(&arr2);
     dynamic_array_free(&arr3);
+    dynamic_array_free(&intAppender);
     return 0;
 }
