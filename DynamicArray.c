@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 // There is no need to free this memory because it is intended to last for the
 // entire lifetime of the program
@@ -105,4 +106,124 @@ int dynamic_array_append(DynamicArray* arr, void* data) {
     }
 
     return 0;
+}
+
+int dynamic_array_pop(DynamicArray* arr) {
+    if (arr->len - 1 < arr->__memsize / 2) {
+        arr->__memsize /= 2;
+        void* test = (void*)realloc(arr->buf, arr->__memsize * arr->element_size);
+
+        if (test == NULL) {
+            printf("Failed to allocate memory in dynamic_array_pop\n");
+            exit(-1);
+        }
+
+        arr->buf = test;
+    }
+
+    arr->len--;
+
+    return 0;
+}
+
+int dynamic_array_insert(DynamicArray* arr, void* data, unsigned int index) {
+    if (index < arr->len) {
+        if (arr->len + 1 >= arr->__memsize) {
+            arr->__memsize *= 2;
+            void* test = (void*)realloc(arr->buf, arr->__memsize * arr->element_size);
+
+            if (test == NULL) {
+                printf("Failed to allocate memory in dynamic_array_insert\n");
+                exit(-1);
+            }
+
+            arr->buf = test;
+        }
+
+        DynamicArray end;
+        dynamic_array_init(&end, arr->element_size, &typeRegistry[arr->type].type);
+        dynamic_array_subset(&end, arr, index, arr->len);
+        
+        if (typeRegistry[arr->type].passByValue == true) {
+            memcpy(arr->buf + (index * arr->element_size), &data, arr->element_size);
+            memcpy(arr->buf + ((index + 1) * arr->element_size), end.buf, end.len * end.element_size);
+        } else {
+            memcpy(arr->buf + (index * arr->element_size), data, arr->element_size);
+            memcpy(arr->buf + ((index + 1) * arr->element_size), end.buf, end.len * end.element_size);
+        }
+        
+        arr->len++;
+
+        dynamic_array_free(&end);
+
+        return 0;
+    } else {
+        printf("Index Out of Bounds warning in dynamic_array_insert\n");
+        return -1;
+    }
+}
+
+int dynamic_array_remove(DynamicArray* arr, unsigned int index) {
+    if (index < arr->len) {
+        if (arr->len - 1 < arr->__memsize / 2) {
+            arr->__memsize /= 2;
+            void* test = (void*)realloc(arr->buf, arr->__memsize * arr->element_size);
+
+            if (test == NULL) {
+                printf("Failed to allocate memory in dynamic_array_remove\n");
+                exit(-1);
+            }
+
+            arr->buf = test;
+        }
+
+        // If the index is the last index in the list, then simply decrement the length of the array
+        if (index == arr->len - 1) {
+            arr->len--;
+            return 0;
+        }
+
+        DynamicArray end;
+        dynamic_array_init(&end, arr->element_size, &typeRegistry[arr->type].type);
+        dynamic_array_subset(&end, arr, index + 1, arr->len);
+
+        memcpy(arr->buf + (index * arr->element_size), end.buf, end.len * end.element_size);
+
+        arr->len--;
+
+        dynamic_array_free(&end);
+
+        return 0;
+    } else {
+        printf("Index Out of Bounds warning in dynamic_array_insert\n");
+        return -1;
+    }
+}
+
+// Note: this function assumes that the dynamic arrays both have the same types, so it is important
+// that you verify that before calling this function, otherwise memory leaks could happen
+int dynamic_array_subset(DynamicArray* dest, DynamicArray* src, unsigned int from, unsigned int to) {
+    if (from < to && to <= src->len) {
+        if (dest->__memsize < to - from) {
+            dest->__memsize = to - from + 1;
+            void* test = (void*)realloc(dest->buf, dest->__memsize * dest->element_size);
+
+            if (test == NULL) {
+                printf("Failed to allocate memory in dynamic_array_subset\n");
+                exit(-1);
+            }
+
+            dest->buf = test;
+        }
+
+        memcpy(dest->buf, src->buf + (from * src->element_size), (to - from) * src->element_size);
+        dest->len = to - from;
+
+        return 0;
+    } else if (to - from == 0) {
+        return 0;
+    } else {
+        printf("dynamic_array_subset indices were incorrect, so function did nothing\nfrom = %d | to = %d | src->len = %d\n", from, to, src->len);
+        return -1;
+    }
 }

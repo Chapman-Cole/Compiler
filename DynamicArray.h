@@ -2,9 +2,9 @@
 #define DYNAMICARRAY_H
 
 #include "Strings.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 typedef struct DynamicArray {
     // The buffer itself
@@ -32,6 +32,19 @@ int dynamic_array_free(DynamicArray* arr);
 // Note: it is assumed that the size of the data that the buffer points to
 // is equal to element_size value of the struct
 int dynamic_array_append(DynamicArray* arr, void* data);
+
+// Removes the final element in the array
+int dynamic_array_pop(DynamicArray* arr);
+
+// Inserts the given data at specified index, shifting everything else after it right
+int dynamic_array_insert(DynamicArray* arr, void* data, unsigned int index);
+
+// Removes the data in the arrray at the specified index, and shifts everything else left
+int dynamic_array_remove(DynamicArray* arr, unsigned int index);
+
+// The dest dynamic array recieves the sub array from the parameter from (inclusive) to the parameter to (exclusive)
+// as bounds of the src array
+int dynamic_array_subset(DynamicArray* dest, DynamicArray* src, unsigned int from, unsigned int to);
 
 typedef struct DynamicArrayType {
     string type;
@@ -61,6 +74,11 @@ typedef union FloatingPointData {
 #define DYNAMIC_ARRAY_REGISTRY_ENABLE    \
     extern unsigned int typeRegistryLen; \
     extern DynamicArrayType* typeRegistry;
+
+// This macro takes in a DynamicArray typeID (unsigned int) and allows
+// you to get the string version for potential use in print debugging
+#define DYNAMIC_ARRAY_TYPE(x) \
+    typeRegistry[x].type
 
 // This is only called once at startup to initialize the type registry that is
 // necessary for the dynamic_array functions to work
