@@ -1,73 +1,58 @@
 #include "DynamicArray.h"
 #include "Strings.h"
 #include <stdio.h>
-
-// clang main.c Strings.c DynamicArray.c -o main
+#include <stdlib.h>
 
 // This is required to be able to access these variables
 DYNAMIC_ARRAY_REGISTRY_ENABLE
 
 int main(void) {
     dynamic_array_registry_setup();
-    dynamic_array_registry_type_append(&STRING("DynamicArray"), false);
 
-    DynamicArray arr, arr2, arr3;
-    dynamic_array_init(&arr, sizeof(int), &STRING("int"));
-    dynamic_array_init(&arr2, sizeof(float), &STRING("float"));
-    dynamic_array_init(&arr3, sizeof(DynamicArray), &STRING("DynamicArray"));
+    DynamicArray usrArrays;
+    dynamic_array_init(&usrArrays, sizeof(DynamicArray), &STRING("DynamicArray"));
 
-    dynamic_array_append(&arr, (void*)67);
-    dynamic_array_append(&arr, (void*)82);
-    dynamic_array_append(&arr, (void*)23);
-    dynamic_array_append(&arr, (void*)22);
-
-    dynamic_array_append(&arr2, &FLOAT(2.31f));
-    dynamic_array_append(&arr2, &FLOAT(4.67f));
-    dynamic_array_append(&arr2, &FLOAT(3.26f));
-    dynamic_array_append(&arr2, &FLOAT(3.14f));
-    dynamic_array_append(&arr2, &FLOAT(9.81f));
-    dynamic_array_append(&arr2, &FLOAT(7.77f));
-    dynamic_array_append(&arr2, &FLOAT(5.78f));
-
-    dynamic_array_pop(&arr);
-    dynamic_array_insert(&arr, (void*)128, 1);
-    dynamic_array_insert(&arr, (void*)799, 2);
-    dynamic_array_remove(&arr, 2);
-    dynamic_array_remove(&arr, arr.len - 1);
-    dynamic_array_remove(&arr, 0);
-    dynamic_array_insert(&arr, (void*)69, 0);
-
-    dynamic_array_append(&arr3, &arr);
-    dynamic_array_append(&arr3, &arr2);
-
-    DynamicArray intAppender;
-    dynamic_array_init(&intAppender, sizeof(int), &STRING("int"));
-    // 69, 128, 82
-    dynamic_array_append(&intAppender, (void*)8);
-    dynamic_array_append(&intAppender, (void*)9);
-
-    dynamic_array_insert_array(&arr, &intAppender, 3);
-
-    dynamic_array_remove_selection(&arr, 1, 3);
-    dynamic_array_remove_selection(&arr, 0, arr.len);
-    dynamic_array_pop(&arr);
-    dynamic_array_remove(&arr, 0);
-    dynamic_array_append(&arr, (void*)24);
+    string input;
+    STRING_INIT(input);
     
-    printf("type: %s\n", DYNAMIC_ARRAY_TYPE(arr3.type).str);
-    printf("type: %s | ", DYNAMIC_ARRAY_TYPE(arr.type).str);
-    for (int i = 0; i < arr.len; i++) {
-        printf("%d, ", ((int*)(((DynamicArray*)(arr3.buf))[0]).buf)[i]);
-    }
-    printf("\ntype: %s | ", DYNAMIC_ARRAY_TYPE(arr2.type).str);
-    for (int i = 0; i < arr2.len; i++) {
-        printf("%.2f, ", ((float*)(((DynamicArray*)(arr3.buf))[1]).buf)[i]);
-    }
-    printf("\n");
+    bool should_continue = true;
+    while (should_continue) {
+        printf(
+            "\n\nPlease Enter One of the Following Options\n"
+            "1: Create a New Array\n"
+            "2: Delete an Array\n"
+            "3: Print Array List\n"
+            "q: Quit the program\n"
+        );
+        
+        string_read_console(&input);
+        
+        //Only look at first character of the input
+        switch (input.str[0]) {
+            case 'q':
+                should_continue = false;
+                break;
+            case '1':
+                printf("Please Enter the name of the array: ");
+                string name;
+                STRING_INIT(name);
+                string_read_console(&name);
+                printf("\nInput: %s\n", name.str);
+                STRING_FREE(name);
+                break;
+            case '2':
+                break;
+            case '3':
+                break;
+            default:
+                continue;
+        }
 
-    dynamic_array_free(&arr);
-    dynamic_array_free(&arr2);
-    dynamic_array_free(&arr3);
-    dynamic_array_free(&intAppender);
+        
+    }
+
+    STRING_FREE(input);
+
+    dynamic_array_free(&usrArrays);
     return 0;
 }

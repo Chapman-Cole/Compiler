@@ -114,3 +114,16 @@ int string_find_replace(string* src, string* find, string* replace) {
         return true;
     }
 }
+
+int string_read_console(string* str) {
+    char buf[MAX_LINE_READ];
+    // fgets always returns a null terminated string
+    fgets(buf, MAX_LINE_READ, stdin);
+
+    int bufLen = strlen(buf);
+
+    // This function will automatically ensure the null terminator is there
+    string_resize(str, bufLen);
+    memcpy(str->str, buf, bufLen);
+    return 0;
+}

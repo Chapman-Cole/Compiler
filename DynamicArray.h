@@ -57,25 +57,55 @@ int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigne
 typedef struct DynamicArrayType {
     string type;
     unsigned int typeID;
-
-    // If true, simply cast your data to a void pointer to pass it directly
-    // If false, pass a reference to your union, struct, or enum into the append function
-    bool passByValue;
 } DynamicArrayType;
 
-// This is needed to get floating point numbers to pass properly into the append function
-typedef union FloatingPointData {
+// This union is used to pass fundamental types in c into the dynamic_array_function, which simplifies the inner workings
+// of the dynamic array functions
+typedef union FundamentalType {
+    char c;
+    unsigned char uc;
+    short s;
+    unsigned short us;
+    int i;
+    unsigned int ui;
+    long l;
+    unsigned long ul;
+    long long ll;
+    unsigned long long ull;
+    bool b;
     float f;
     double d;
     long double ld;
-} FloatingPointData;
+} FundamentalType;
 
+#define CHAR(x) \
+    (FundamentalType) { .c = x }
+#define UCHAR(x) \
+    (FundamentalType) {.uc = x}
+#define SHORT(x) \
+    (FundamentalType) {.s = x}
+#define USHORT(x) \
+    (FundamentalType) {.us = x}
+#define INT(x) \
+    (FundamentalType) {.i = x}
+#define UINT(x) \
+    (FundamentalType) {.ui = x}
+#define LONG(x) \
+    (FundamentalType) {.l = x}
+#define ULONG(x) \
+    (FundamentalType) {.ul = x}
+#define LONG_LONG(x)\
+    (FundamentalType) {.ll = x}
+#define ULONG_LONG(x)\
+    (FundamentalType) {.ull = x}
+#define BOOL(x) \
+    (FundamentalType) {.b = x}
 #define FLOAT(x) \
-    (FloatingPointData) { .f = x }
+    (FundamentalType) { .f = x }
 #define DOUBLE(x) \
-    (FloatingPointData) { .d = x }
+    (FundamentalType) { .d = x }
 #define LONG_DOUBLE(x) \
-    (FloatingPointData) { .ld = x }
+    (FundamentalType) { .ld = x }
 
 // Use this define at the top of the file near the include headers
 // in order to get access to the variables below
@@ -92,7 +122,7 @@ typedef union FloatingPointData {
 // necessary for the dynamic_array functions to work
 int dynamic_array_registry_setup(void);
 
-int dynamic_array_registry_type_append(string* type, bool passByValue);
+int dynamic_array_registry_type_append(string* type);
 
 // Pass in a string of the types name, and it returns the id of that type, if it finds it
 unsigned int dynamic_array_registry_get_typeID(string* type);

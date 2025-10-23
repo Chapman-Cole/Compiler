@@ -11,7 +11,7 @@
 DynamicArrayType* typeRegistry = NULL;
 unsigned int typeRegistryLen = 0;
 
-int dynamic_array_registry_type_append(string* type, bool passByValue) {
+int dynamic_array_registry_type_append(string* type) {
     typeRegistry = (DynamicArrayType*)realloc(typeRegistry, (typeRegistryLen + 1) * sizeof(DynamicArrayType));
     if (typeRegistry == NULL) {
         printf("Failed to initialize/append type registry for DynamicArray type.");
@@ -21,7 +21,6 @@ int dynamic_array_registry_type_append(string* type, bool passByValue) {
     // Can't forget to register string before using it with other functions
     STRING_INIT(typeRegistry[typeRegistryLen].type);
     typeRegistry[typeRegistryLen].typeID = typeRegistryLen;
-    typeRegistry[typeRegistryLen].passByValue = passByValue;
     string_copy(&typeRegistry[typeRegistryLen].type, type);
 
     typeRegistryLen++;
@@ -29,22 +28,24 @@ int dynamic_array_registry_type_append(string* type, bool passByValue) {
 }
 
 int dynamic_array_registry_setup(void) {
-    dynamic_array_registry_type_append(&STRING("char"), true);
-    dynamic_array_registry_type_append(&STRING("unsigned char"), true);
-    dynamic_array_registry_type_append(&STRING("short"), true);
-    dynamic_array_registry_type_append(&STRING("unsigned short"), true);
-    dynamic_array_registry_type_append(&STRING("int"), true);
-    dynamic_array_registry_type_append(&STRING("unsigned int"), true);
-    dynamic_array_registry_type_append(&STRING("long"), true);
-    dynamic_array_registry_type_append(&STRING("unsigned long"), true);
-    dynamic_array_registry_type_append(&STRING("long long"), true);
-    dynamic_array_registry_type_append(&STRING("unsigned long long"), true);
-    dynamic_array_registry_type_append(&STRING("bool"), true);
+    dynamic_array_registry_type_append(&STRING("char"));
+    dynamic_array_registry_type_append(&STRING("unsigned char"));
+    dynamic_array_registry_type_append(&STRING("short"));
+    dynamic_array_registry_type_append(&STRING("unsigned short"));
+    dynamic_array_registry_type_append(&STRING("int"));
+    dynamic_array_registry_type_append(&STRING("unsigned int"));
+    dynamic_array_registry_type_append(&STRING("long"));
+    dynamic_array_registry_type_append(&STRING("unsigned long"));
+    dynamic_array_registry_type_append(&STRING("long long"));
+    dynamic_array_registry_type_append(&STRING("unsigned long long"));
+    dynamic_array_registry_type_append(&STRING("bool"));
 
     // Since float data is being passed through a union, it actually will be treated like a struct
-    dynamic_array_registry_type_append(&STRING("float"), false);
-    dynamic_array_registry_type_append(&STRING("double"), false);
-    dynamic_array_registry_type_append(&STRING("long double"), false);
+    dynamic_array_registry_type_append(&STRING("float"));
+    dynamic_array_registry_type_append(&STRING("double"));
+    dynamic_array_registry_type_append(&STRING("long double"));
+
+    dynamic_array_registry_type_append(&STRING("DynamicArray"));
 
     return 0;
 }
@@ -94,16 +95,9 @@ int dynamic_array_append(DynamicArray* arr, void* data) {
         arr->buf = test;
     }
 
-    if (typeRegistry[arr->type].passByValue == true) {
-        // Since in this case the value of the void* itself is the data we want, we pass a pointer to the void* that is then
-        // used by the memcpy function to copy the specified number of bytes from the void* into the array
-        memcpy(arr->buf + (arr->len * arr->element_size), &data, arr->element_size);
-        arr->len++;
-    } else {
-        // This copies the raw bytes of the struct, union, or enum pointed to by data into the array
-        memcpy(arr->buf + (arr->len * arr->element_size), data, arr->element_size);
-        arr->len++;
-    }
+    // This copies the raw bytes of the struct, union, or enum pointed to by data into the array
+    memcpy(arr->buf + (arr->len * arr->element_size), data, arr->element_size);
+    arr->len++;
 
     return 0;
 }
@@ -146,13 +140,8 @@ int dynamic_array_insert(DynamicArray* arr, void* data, unsigned int index) {
         dynamic_array_init(&end, arr->element_size, &typeRegistry[arr->type].type);
         dynamic_array_subset(&end, arr, index, arr->len);
 
-        if (typeRegistry[arr->type].passByValue == true) {
-            memcpy(arr->buf + (index * arr->element_size), &data, arr->element_size);
-            memcpy(arr->buf + ((index + 1) * arr->element_size), end.buf, end.len * end.element_size);
-        } else {
-            memcpy(arr->buf + (index * arr->element_size), data, arr->element_size);
-            memcpy(arr->buf + ((index + 1) * arr->element_size), end.buf, end.len * end.element_size);
-        }
+        memcpy(arr->buf + (index * arr->element_size), data, arr->element_size);
+        memcpy(arr->buf + ((index + 1) * arr->element_size), end.buf, end.len * end.element_size);
 
         arr->len++;
 
