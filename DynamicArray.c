@@ -27,7 +27,7 @@ int dynamic_array_registry_type_append(string* type) {
     return 0;
 }
 
-int dynamic_array_registry_setup(void) {
+int dynamic_array_registry_init(void) {
     dynamic_array_registry_type_append(&STRING("char"));
     dynamic_array_registry_type_append(&STRING("unsigned char"));
     dynamic_array_registry_type_append(&STRING("short"));
@@ -46,7 +46,19 @@ int dynamic_array_registry_setup(void) {
     dynamic_array_registry_type_append(&STRING("long double"));
 
     dynamic_array_registry_type_append(&STRING("DynamicArray"));
+    dynamic_array_registry_type_append(&STRING("string"));
 
+    return 0;
+}
+
+int dynamic_array_registry_terminate(void) {
+    for (int i = 0; i < typeRegistryLen; i++) {
+        STRING_FREE(typeRegistry[i].type);
+    }
+
+    free(typeRegistry);
+    typeRegistry = NULL;
+    typeRegistryLen = 0;
     return 0;
 }
 
@@ -73,7 +85,20 @@ unsigned int dynamic_array_registry_get_typeID(string* type) {
     return -1;
 }
 
+// If the freeElements variable is set to true, then the function will recursively search the elements of the 
+// dynamic_array to search for potential sublists, and free those first and then work its way back up the chain
+// it also accounts for the possibility of strings, which are a special case
 int dynamic_array_free(DynamicArray* arr) {
+    if (arr->type == dynamic_array_registry_get_typeID(&STRING("DynamicArray"))) {
+        for (int i = 0; i < arr->len; i++) {
+            dynamic_array_free((DynamicArray*)(&arr->buf[i]));
+        }
+    } else if (arr->type == dynamic_array_registry_get_typeID(&STRING("string"))) {
+        for (int i = 0; i < arr->len; i++) {
+            STRING_FREE(((string*)arr->buf)[i]);
+        }
+    }
+
     free(arr->buf);
     arr->buf = NULL;
     arr->len = 0;

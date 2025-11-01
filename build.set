@@ -5,6 +5,14 @@ profile : default = {
     Strings.c
   ]
 
+  args = [
+    -Wall,
+    -Werror,
+    -g,
+    -fsanitize=address,
+    -LSAN_OPTIONS=verbosity=1:log_threads=1
+  ]
+
   compilerFormat = [gcc/clang]
 
   compilerPath = [clang]

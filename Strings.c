@@ -1,7 +1,7 @@
 #include "Strings.h"
+#include <math.h>
 #include <stdbool.h>
 #include <string.h>
-#include <math.h>
 
 // This implementation could definitely be better, but for now simply
 // exactly fitting the size of the buffer to the string is probably just fine
@@ -120,10 +120,15 @@ int string_read_console(string* str) {
     // fgets always returns a null terminated string
     fgets(buf, MAX_LINE_READ, stdin);
 
-    int bufLen = strlen(buf);
+    int bufLen = strnlen(buf, MAX_LINE_READ);
 
     // This function will automatically ensure the null terminator is there
-    string_resize(str, bufLen);
-    memcpy(str->str, buf, bufLen);
+    // Also, subtract one to make sure the newline character isn't included, because otherwise that happens
+    // by default
+    if (bufLen - 1 > 0) {
+        string_resize(str, bufLen - 1);
+        memcpy(str->str, buf, bufLen - 1);
+    }
+
     return 0;
 }

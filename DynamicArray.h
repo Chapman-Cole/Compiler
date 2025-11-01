@@ -120,7 +120,10 @@ typedef union FundamentalType {
 
 // This is only called once at startup to initialize the type registry that is
 // necessary for the dynamic_array functions to work
-int dynamic_array_registry_setup(void);
+int dynamic_array_registry_init(void);
+
+// Frees the type registry. Should be used at the very end of the life cycle of a program
+int dynamic_array_registry_terminate(void);
 
 int dynamic_array_registry_type_append(string* type);
 
