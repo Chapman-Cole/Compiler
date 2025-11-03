@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 
 // There is no need to free this memory because it is intended to last for the
 // entire lifetime of the program
@@ -85,13 +84,13 @@ unsigned int dynamic_array_registry_get_typeID(string* type) {
     return -1;
 }
 
-// If the freeElements variable is set to true, then the function will recursively search the elements of the 
+// If the freeElements variable is set to true, then the function will recursively search the elements of the
 // dynamic_array to search for potential sublists, and free those first and then work its way back up the chain
 // it also accounts for the possibility of strings, which are a special case
 int dynamic_array_free(DynamicArray* arr) {
     if (arr->type == dynamic_array_registry_get_typeID(&STRING("DynamicArray"))) {
         for (int i = 0; i < arr->len; i++) {
-            dynamic_array_free((DynamicArray*)(&arr->buf[i]));
+            dynamic_array_free(&((DynamicArray*)arr->buf)[i]);
         }
     } else if (arr->type == dynamic_array_registry_get_typeID(&STRING("string"))) {
         for (int i = 0; i < arr->len; i++) {
@@ -121,7 +120,9 @@ int dynamic_array_append(DynamicArray* arr, void* data) {
     }
 
     // This copies the raw bytes of the struct, union, or enum pointed to by data into the array
-    memcpy(arr->buf + (arr->len * arr->element_size), data, arr->element_size);
+    // Cast the void* to a char* in order to get around pointer arithmetic being disallowed with void*
+    // The casting to a char* also allows for byte scaling, which is what is desired when using the memcpy function
+    memcpy((char*)arr->buf + (arr->len * arr->element_size), data, arr->element_size);
     arr->len++;
 
     return 0;
@@ -165,8 +166,10 @@ int dynamic_array_insert(DynamicArray* arr, void* data, unsigned int index) {
         dynamic_array_init(&end, arr->element_size, &typeRegistry[arr->type].type);
         dynamic_array_subset(&end, arr, index, arr->len);
 
-        memcpy(arr->buf + (index * arr->element_size), data, arr->element_size);
-        memcpy(arr->buf + ((index + 1) * arr->element_size), end.buf, end.len * end.element_size);
+        // Cast the void* to a char* in order to get around pointer arithmetic being disallowed with void*
+        // The casting to a char* also allows for byte scaling, which is what is desired when using the memcpy function
+        memcpy((char*)arr->buf + (index * arr->element_size), data, arr->element_size);
+        memcpy((char*)arr->buf + ((index + 1) * arr->element_size), end.buf, end.len * end.element_size);
 
         arr->len++;
 
@@ -204,7 +207,9 @@ int dynamic_array_remove(DynamicArray* arr, unsigned int index) {
             dynamic_array_init(&end, arr->element_size, &typeRegistry[arr->type].type);
             dynamic_array_subset(&end, arr, index + 1, arr->len);
 
-            memcpy(arr->buf + (index * arr->element_size), end.buf, end.len * end.element_size);
+            // Cast the void* to a char* in order to get around pointer arithmetic being disallowed with void*
+            // The casting to a char* also allows for byte scaling, which is what is desired when using the memcpy function
+            memcpy((char*)arr->buf + (index * arr->element_size), end.buf, end.len * end.element_size);
 
             arr->len--;
 
@@ -236,7 +241,9 @@ int dynamic_array_subset(DynamicArray* dest, DynamicArray* src, unsigned int fro
             dest->buf = test;
         }
 
-        memcpy(dest->buf, src->buf + (from * src->element_size), (to - from) * src->element_size);
+        // Cast the void* to a char* in order to get around pointer arithmetic being disallowed with void*
+        // The casting to a char* also allows for byte scaling, which is what is desired when using the memcpy function
+        memcpy(dest->buf, (char*)src->buf + (from * src->element_size), (to - from) * src->element_size);
         dest->len = to - from;
 
         return 0;
@@ -268,8 +275,10 @@ int dynamic_array_insert_array(DynamicArray* dest, DynamicArray* src, unsigned i
         dynamic_array_init(&end, dest->element_size, &DYNAMIC_ARRAY_TYPE(dest->type));
         dynamic_array_subset(&end, dest, index, dest->len);
 
-        memcpy(dest->buf + (index * dest->element_size), src->buf, src->len * src->element_size);
-        memcpy(dest->buf + ((index + src->len) * dest->element_size), end.buf, end.len * end.element_size);
+        // Cast the void* to a char* in order to get around pointer arithmetic being disallowed with void*
+        // The casting to a char* also allows for byte scaling, which is what is desired when using the memcpy function
+        memcpy((char*)dest->buf + (index * dest->element_size), src->buf, src->len * src->element_size);
+        memcpy((char*)dest->buf + ((index + src->len) * dest->element_size), end.buf, end.len * end.element_size);
 
         dynamic_array_free(&end);
         dest->len += src->len;
@@ -287,7 +296,9 @@ int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigne
         dynamic_array_init(&end, arr->element_size, &DYNAMIC_ARRAY_TYPE(arr->type));
         dynamic_array_subset(&end, arr, to, arr->len);
 
-        memcpy(arr->buf + (from * arr->element_size), end.buf, end.len * end.element_size);
+        // Cast the void* to a char* in order to get around pointer arithmetic being disallowed with void*
+        // The casting to a char* also allows for byte scaling, which is what is desired when using the memcpy function
+        memcpy((char*)arr->buf + (from * arr->element_size), end.buf, end.len * end.element_size);
 
         arr->len -= to - from;
 
@@ -314,4 +325,16 @@ int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigne
         printf("dynamic_array_remove_selection index range error\n");
         return -1;
     }
+}
+
+// Finish later
+void* dynamic_array_get(DynamicArray* arr, int dimensions, ...) {
+    va_list args;
+    va_start(args, dimensions);
+
+    for (int i = 0; i < dimensions; i++) {
+
+    }
+
+    va_end(args);
 }

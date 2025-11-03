@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 typedef struct DynamicArray {
     // The buffer itself
@@ -53,6 +54,9 @@ int dynamic_array_insert_array(DynamicArray* dest, DynamicArray* src, unsigned i
 // Removes the specified selection, with from being inclusive bottom range, and to being the exclusive
 // top range
 int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigned int to);
+
+// Returns a pointer to the data in the specified 
+void* dynamic_array_get(DynamicArray* arr, int dimensions, ...);
 
 typedef struct DynamicArrayType {
     string type;

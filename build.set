@@ -19,3 +19,23 @@ profile : default = {
 
   out = [main]
 }
+
+profile : windows =  {
+  src = [
+    main.c,
+    DynamicArray.c,
+    Strings.c
+  ]
+
+  args = [
+    /W4,
+    /Zi,
+    /fsanitize=address
+  ]
+
+  compilerFormat = [msvc]
+
+  compilerPath = [cl]
+
+  out = [main.exe]
+}
