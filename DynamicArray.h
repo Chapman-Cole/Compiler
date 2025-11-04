@@ -61,6 +61,11 @@ void* dynamic_array_get(DynamicArray* arr, int dimensions, ...);
 typedef struct DynamicArrayType {
     string type;
     unsigned int typeID;
+    // This is the function pointer to the deallocation function of the type in the dynamic array, if it needs one
+    // if this function pointer is NULL, then that just means that the type doesn't have any pointers that need freeing
+    // specifically, this is used for structs that might contain pointers that need to be freed when freeing the entire dynamic
+    // array
+    int (*deallocator)(void*);
 } DynamicArrayType;
 
 // This union is used to pass fundamental types in c into the dynamic_array_function, which simplifies the inner workings
@@ -129,9 +134,14 @@ int dynamic_array_registry_init(void);
 // Frees the type registry. Should be used at the very end of the life cycle of a program
 int dynamic_array_registry_terminate(void);
 
-int dynamic_array_registry_type_append(string* type);
+// If the type being appended is a basic type, then you can simply pass in NULL for 
+// function pointer
+int dynamic_array_registry_type_append(string* type, int (*deallocator)(void*));
 
 // Pass in a string of the types name, and it returns the id of that type, if it finds it
 unsigned int dynamic_array_registry_get_typeID(string* type);
+
+// The string deallocation function that will be passed to dynamic_array_registry_type_append
+int string_deallocator(void* str);
 
 #endif
