@@ -61,6 +61,7 @@ int dynamic_array_registry_init(void) {
 int dynamic_array_registry_terminate(void) {
     for (int i = 0; i < typeRegistryLen; i++) {
         STRING_FREE(typeRegistry[i].type);
+        typeRegistry[i].deallocator = NULL;
     }
 
     free(typeRegistry);
@@ -104,7 +105,7 @@ int dynamic_array_free(DynamicArray* arr) {
         // This will only run if the type requires a special deallocation function on each element, mainly if each
         // type has a pointer within itself that needs to be handled
         for (int i = 0; i < arr->len; i++) {
-            typeRegistry[arr->type].deallocator((void*)(arr->buf + (i * arr->element_size)));
+            typeRegistry[arr->type].deallocator((void*)((char*)arr->buf + (i * arr->element_size)));
         }
     }
 

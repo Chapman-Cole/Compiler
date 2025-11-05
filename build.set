@@ -20,26 +20,6 @@ profile : default = {
   out = [main]
 }
 
-profile : drmemory = {
-    src = [
-    main.c,
-    DynamicArray.c,
-    Strings.c
-  ]
-
-  args = [
-    -Wall,
-    -Werror,
-    -gdwarf-2
-  ]
-
-  compilerFormat = [gcc/clang]
-
-  compilerPath = [clang]
-
-  out = [main]
-}
-
 profile : windows =  {
   src = [
     main.c,

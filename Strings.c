@@ -128,6 +128,9 @@ int string_read_console(string* str) {
     if (bufLen - 1 > 0) {
         string_resize(str, bufLen - 1);
         memcpy(str->str, buf, bufLen - 1);
+    } else {
+        string_resize(str, 1);
+        str->str[0] = '\0';
     }
 
     return 0;
