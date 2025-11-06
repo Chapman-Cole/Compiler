@@ -28,6 +28,9 @@ int dynamic_array_init(DynamicArray* arr, size_t element_size, string* type);
 
 int dynamic_array_free(DynamicArray* arr);
 
+// This is specifically for use in the typeRegistry to make certain things easier
+int dynamic_array_deallocator(void* arr);
+
 // In order to make this function work with any type of data, you have to provide
 // a pointer to that data so that the raw bytes can be shuffled into the array
 // Note: it is assumed that the size of the data that the buffer points to

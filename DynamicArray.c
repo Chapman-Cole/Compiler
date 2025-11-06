@@ -50,9 +50,9 @@ int dynamic_array_registry_init(void) {
     dynamic_array_registry_type_append(&STRING("double"), NULL);
     dynamic_array_registry_type_append(&STRING("long double"), NULL);
 
-    // The function pointer for the deallocation of a dynamic array is already handled by a defined function, so it can 
+    // The function pointer for the deallocation of a dynamic array is already handled by a defined function, so it can
     // just be NULL here
-    dynamic_array_registry_type_append(&STRING("DynamicArray"), NULL);
+    dynamic_array_registry_type_append(&STRING("DynamicArray"), dynamic_array_deallocator);
     dynamic_array_registry_type_append(&STRING("string"), string_deallocator);
 
     return 0;
@@ -143,6 +143,7 @@ int dynamic_array_pop(DynamicArray* arr) {
     if (arr->len > 0) {
         if (arr->len - 1 < arr->__memsize / 2) {
             arr->__memsize /= 2;
+
             void* test = (void*)realloc(arr->buf, arr->__memsize * arr->element_size);
 
             if (test == NULL) {
@@ -151,6 +152,12 @@ int dynamic_array_pop(DynamicArray* arr) {
             }
 
             arr->buf = test;
+        }
+
+        // Arrays of arrays or arrays of structs with pointers may require special deallocation functions.
+        // This is here to account for that possibility
+        if (typeRegistry[arr->type].deallocator != NULL) {
+            typeRegistry[arr->type].deallocator((void*)((char*)arr->buf + ((arr->len - 1) * arr->element_size)));
         }
 
         arr->len--;
@@ -195,7 +202,7 @@ int dynamic_array_insert(DynamicArray* arr, void* data, unsigned int index) {
 
 int dynamic_array_remove(DynamicArray* arr, unsigned int index) {
     if (arr->len > 0) {
-        if (index < arr->len) {
+        if (index < arr->len && index >= 0) {
             if (arr->len - 1 < arr->__memsize / 2) {
                 arr->__memsize /= 2;
                 void* test = (void*)realloc(arr->buf, arr->__memsize * arr->element_size);
@@ -206,6 +213,12 @@ int dynamic_array_remove(DynamicArray* arr, unsigned int index) {
                 }
 
                 arr->buf = test;
+            }
+
+            // Arrays of arrays or arrays of structs with pointers may require special deallocation functions.
+            // This is here to account for that possibility
+            if (typeRegistry[arr->type].deallocator != NULL) {
+                typeRegistry[arr->type].deallocator((void*)((char*)arr->buf + (index * arr->element_size)));
             }
 
             // If the index is the last index in the list, then simply decrement the length of the array
@@ -302,7 +315,18 @@ int dynamic_array_insert_array(DynamicArray* dest, DynamicArray* src, unsigned i
 }
 
 int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigned int to) {
-    if (from < to && to <= arr->len) {
+    if (from < to && to <= arr->len && from >= 0) {
+        // First, we have to make sure that all of the data being removed is safely deallocated if the special
+        // deallocation function is required
+
+        if (typeRegistry[arr->type].deallocator != NULL) {
+            // Arrays of arrays or arrays of structs with pointers may require special deallocation functions.
+            // This is here to account for that possibility
+            for (int i = from; i < to; i++) {
+                typeRegistry[arr->type].deallocator((void*)((char*)arr->buf + (i * arr->element_size)));
+            }
+        }
+
         DynamicArray end;
         dynamic_array_init(&end, arr->element_size, &DYNAMIC_ARRAY_TYPE(arr->type));
         dynamic_array_subset(&end, arr, to, arr->len);
@@ -344,10 +368,14 @@ void* dynamic_array_get(DynamicArray* arr, int dimensions, ...) {
     va_start(args, dimensions);
 
     for (int i = 0; i < dimensions; i++) {
-
     }
 
     va_end(args);
 
     return NULL;
+}
+
+int dynamic_array_deallocator(void* arr) {
+    dynamic_array_free((DynamicArray*)arr);
+    return 0;
 }
