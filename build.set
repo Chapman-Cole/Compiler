@@ -39,3 +39,24 @@ profile : windows =  {
 
   out = [main.exe]
 }
+
+profile : no_asan = {
+  src = [
+    main.c,
+    DynamicArray.c,
+    Strings.c
+  ]
+
+  args = [
+    -Wall,
+    -Werror,
+    -g
+  ]
+
+  compilerFormat = [gcc/clang]
+
+  compilerPath = [clang]
+
+  out = [main]
+
+}

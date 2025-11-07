@@ -43,16 +43,21 @@ int main(void) {
             dynamic_array_append(&arrayNames, &name);
             break;
         case '2':
-            printf("\033[2J\033Please Enter the Name of the Array you want to delete:\n");
+            printf("\033[2J\033[1;1HArray List (%d elements):\n", arrayNames.len);
             for (int i = 0; i < arrayNames.len; i++) {
-                printf("%s\n", ((string*)(arrayNames.buf))[i].str);
+                //printf("%s\n", ((string*)(arrayNames.buf))[i].str);
+                printf("%s\n", ((string*)dynamic_array_get(&arrayNames, 1, i))->str);
             }
+
+            printf("\nPlease enter the name of the array to be deleted: ");
+            string_read_console(&input);
 
             break;
         case '3':
             printf("\033[2J\033[1;1HArray List (%d elements):\n", arrayNames.len);
             for (int i = 0; i < arrayNames.len; i++) {
-                printf("%s\n", ((string*)(arrayNames.buf))[i].str);
+                //printf("%s\n", ((string*)(arrayNames.buf))[i].str);
+                printf("%s\n", ((string*)dynamic_array_get(&arrayNames, 1, i))->str);
             }
 
             // Wait for user to type something to move on
@@ -64,7 +69,7 @@ int main(void) {
     }
 
     STRING_FREE(input);
-    
+
     dynamic_array_free(&arrayNames);
     dynamic_array_free(&usrArrays);
 

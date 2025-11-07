@@ -367,12 +367,35 @@ void* dynamic_array_get(DynamicArray* arr, int dimensions, ...) {
     va_list args;
     va_start(args, dimensions);
 
-    for (int i = 0; i < dimensions; i++) {
+    unsigned int dynamic_array_type = dynamic_array_registry_get_typeID(&STRING("DynamicArray"));
+
+    DynamicArray* temp = arr;
+    for (int i = 0; i < dimensions - 1; i++) {
+        if (temp->type == dynamic_array_type) {
+            int index = va_arg(args, int);
+            if (index >= 0 && index < temp->len) {
+                temp = (DynamicArray*)((char*)arr->buf + (index * temp->element_size));
+            } else {
+                printf("Index Out of Bounds error in dynamic_array_type");
+                return NULL;
+            }
+        } else {
+            printf("Number of dimensions specified is too large for dynamic_array_get\n");
+            return NULL;
+        }
+    }
+
+    int index = va_arg(args, int);
+    void* answer = NULL;
+    if (index >= 0 && index < temp->len) {
+        answer = (void*)((char*)temp->buf + (index * temp->element_size));
+    } else {
+        printf("Index Out of Bounds error in dynamic_array_get\n");
+        return NULL;
     }
 
     va_end(args);
-
-    return NULL;
+    return answer;
 }
 
 int dynamic_array_deallocator(void* arr) {
