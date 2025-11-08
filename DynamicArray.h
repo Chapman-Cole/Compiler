@@ -2,10 +2,10 @@
 #define DYNAMICARRAY_H
 
 #include "Strings.h"
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 
 typedef struct DynamicArray {
     // The buffer itself
@@ -24,7 +24,7 @@ typedef struct DynamicArray {
     unsigned int type;
 } DynamicArray;
 
-int dynamic_array_init(DynamicArray* arr, size_t element_size, string* type);
+int dynamic_array_init(DynamicArray* arr, string* type);
 
 int dynamic_array_free(DynamicArray* arr);
 
@@ -58,8 +58,15 @@ int dynamic_array_insert_array(DynamicArray* dest, DynamicArray* src, unsigned i
 // top range
 int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigned int to);
 
-// Returns a pointer to the data in the specified 
+// Returns a pointer to the data in the specified dynamic array
 void* dynamic_array_get(DynamicArray* arr, int dimensions, ...);
+
+// This will create an n dimensional array with the specified dimensions passed into the variadic part of the
+// function. This will be a homogenous ndimensional array
+int dynamic_array_create_nDimensions(DynamicArray* arr, string* type, int dimensions, ...);
+
+// Resizes the array to the specified size
+int dynamic_array_resize(DynamicArray* arr, unsigned int size);
 
 typedef struct DynamicArrayType {
     string type;
@@ -69,6 +76,8 @@ typedef struct DynamicArrayType {
     // specifically, this is used for structs that might contain pointers that need to be freed when freeing the entire dynamic
     // array
     int (*deallocator)(void*);
+    // Stores the memory size of the type
+    unsigned int size;
 } DynamicArrayType;
 
 // This union is used to pass fundamental types in c into the dynamic_array_function, which simplifies the inner workings
@@ -93,25 +102,25 @@ typedef union FundamentalType {
 #define CHAR(x) \
     (FundamentalType) { .c = x }
 #define UCHAR(x) \
-    (FundamentalType) {.uc = x}
+    (FundamentalType) { .uc = x }
 #define SHORT(x) \
-    (FundamentalType) {.s = x}
+    (FundamentalType) { .s = x }
 #define USHORT(x) \
-    (FundamentalType) {.us = x}
+    (FundamentalType) { .us = x }
 #define INT(x) \
-    (FundamentalType) {.i = x}
+    (FundamentalType) { .i = x }
 #define UINT(x) \
-    (FundamentalType) {.ui = x}
+    (FundamentalType) { .ui = x }
 #define LONG(x) \
-    (FundamentalType) {.l = x}
+    (FundamentalType) { .l = x }
 #define ULONG(x) \
-    (FundamentalType) {.ul = x}
-#define LONG_LONG(x)\
-    (FundamentalType) {.ll = x}
-#define ULONG_LONG(x)\
-    (FundamentalType) {.ull = x}
+    (FundamentalType) { .ul = x }
+#define LONG_LONG(x) \
+    (FundamentalType) { .ll = x }
+#define ULONG_LONG(x) \
+    (FundamentalType) { .ull = x }
 #define BOOL(x) \
-    (FundamentalType) {.b = x}
+    (FundamentalType) { .b = x }
 #define FLOAT(x) \
     (FundamentalType) { .f = x }
 #define DOUBLE(x) \
@@ -130,6 +139,9 @@ typedef union FundamentalType {
 #define DYNAMIC_ARRAY_TYPE(x) \
     typeRegistry[x].type
 
+#define DYNAMIC_ARRAY_TYPE_SIZE(x) \
+    typeRegistry[x].size
+
 // This is only called once at startup to initialize the type registry that is
 // necessary for the dynamic_array functions to work
 int dynamic_array_registry_init(void);
@@ -137,9 +149,9 @@ int dynamic_array_registry_init(void);
 // Frees the type registry. Should be used at the very end of the life cycle of a program
 int dynamic_array_registry_terminate(void);
 
-// If the type being appended is a basic type, then you can simply pass in NULL for 
+// If the type being appended is a basic type, then you can simply pass in NULL for
 // function pointer
-int dynamic_array_registry_type_append(string* type, int (*deallocator)(void*));
+int dynamic_array_registry_type_append(string* type, int (*deallocator)(void*), unsigned int size);
 
 // Pass in a string of the types name, and it returns the id of that type, if it finds it
 unsigned int dynamic_array_registry_get_typeID(string* type);

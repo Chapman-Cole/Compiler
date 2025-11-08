@@ -15,7 +15,7 @@ int string_deallocator(void* str) {
     return 0;
 }
 
-int dynamic_array_registry_type_append(string* type, int (*deallocator)(void*)) {
+int dynamic_array_registry_type_append(string* type, int (*deallocator)(void*), unsigned int size) {
     typeRegistry = (DynamicArrayType*)realloc(typeRegistry, (typeRegistryLen + 1) * sizeof(DynamicArrayType));
     if (typeRegistry == NULL) {
         printf("Failed to initialize/append type registry for DynamicArray type.");
@@ -27,33 +27,34 @@ int dynamic_array_registry_type_append(string* type, int (*deallocator)(void*)) 
     typeRegistry[typeRegistryLen].typeID = typeRegistryLen;
     string_copy(&typeRegistry[typeRegistryLen].type, type);
     typeRegistry[typeRegistryLen].deallocator = deallocator;
+    typeRegistry[typeRegistryLen].size = size;
 
     typeRegistryLen++;
     return 0;
 }
 
 int dynamic_array_registry_init(void) {
-    dynamic_array_registry_type_append(&STRING("char"), NULL);
-    dynamic_array_registry_type_append(&STRING("unsigned char"), NULL);
-    dynamic_array_registry_type_append(&STRING("short"), NULL);
-    dynamic_array_registry_type_append(&STRING("unsigned short"), NULL);
-    dynamic_array_registry_type_append(&STRING("int"), NULL);
-    dynamic_array_registry_type_append(&STRING("unsigned int"), NULL);
-    dynamic_array_registry_type_append(&STRING("long"), NULL);
-    dynamic_array_registry_type_append(&STRING("unsigned long"), NULL);
-    dynamic_array_registry_type_append(&STRING("long long"), NULL);
-    dynamic_array_registry_type_append(&STRING("unsigned long long"), NULL);
-    dynamic_array_registry_type_append(&STRING("bool"), NULL);
+    dynamic_array_registry_type_append(&STRING("char"), NULL, sizeof(char));
+    dynamic_array_registry_type_append(&STRING("unsigned char"), NULL, sizeof(unsigned char));
+    dynamic_array_registry_type_append(&STRING("short"), NULL, sizeof(short));
+    dynamic_array_registry_type_append(&STRING("unsigned short"), NULL, sizeof(unsigned short));
+    dynamic_array_registry_type_append(&STRING("int"), NULL, sizeof(int));
+    dynamic_array_registry_type_append(&STRING("unsigned int"), NULL, sizeof(unsigned int));
+    dynamic_array_registry_type_append(&STRING("long"), NULL, sizeof(long));
+    dynamic_array_registry_type_append(&STRING("unsigned long"), NULL, sizeof(unsigned long));
+    dynamic_array_registry_type_append(&STRING("long long"), NULL, sizeof(long long));
+    dynamic_array_registry_type_append(&STRING("unsigned long long"), NULL, sizeof(unsigned long long));
+    dynamic_array_registry_type_append(&STRING("bool"), NULL, sizeof(bool));
 
     // Since float data is being passed through a union, it actually will be treated like a struct
-    dynamic_array_registry_type_append(&STRING("float"), NULL);
-    dynamic_array_registry_type_append(&STRING("double"), NULL);
-    dynamic_array_registry_type_append(&STRING("long double"), NULL);
+    dynamic_array_registry_type_append(&STRING("float"), NULL, sizeof(float));
+    dynamic_array_registry_type_append(&STRING("double"), NULL, sizeof(double));
+    dynamic_array_registry_type_append(&STRING("long double"), NULL, sizeof(long double));
 
     // The function pointer for the deallocation of a dynamic array is already handled by a defined function, so it can
     // just be NULL here
-    dynamic_array_registry_type_append(&STRING("DynamicArray"), dynamic_array_deallocator);
-    dynamic_array_registry_type_append(&STRING("string"), string_deallocator);
+    dynamic_array_registry_type_append(&STRING("DynamicArray"), dynamic_array_deallocator, sizeof(DynamicArray));
+    dynamic_array_registry_type_append(&STRING("string"), string_deallocator, sizeof(string));
 
     return 0;
 }
@@ -70,12 +71,12 @@ int dynamic_array_registry_terminate(void) {
     return 0;
 }
 
-int dynamic_array_init(DynamicArray* arr, size_t element_size, string* type) {
+int dynamic_array_init(DynamicArray* arr, string* type) {
     arr->buf = NULL;
     arr->len = 0;
     arr->__memsize = 1;
-    arr->element_size = element_size;
     arr->type = dynamic_array_registry_get_typeID(type);
+    arr->element_size = DYNAMIC_ARRAY_TYPE_SIZE(arr->type);
     return 0;
 }
 
@@ -181,7 +182,7 @@ int dynamic_array_insert(DynamicArray* arr, void* data, unsigned int index) {
         }
 
         DynamicArray end;
-        dynamic_array_init(&end, arr->element_size, &typeRegistry[arr->type].type);
+        dynamic_array_init(&end, &typeRegistry[arr->type].type);
         dynamic_array_subset(&end, arr, index, arr->len);
 
         // Cast the void* to a char* in order to get around pointer arithmetic being disallowed with void*
@@ -228,7 +229,7 @@ int dynamic_array_remove(DynamicArray* arr, unsigned int index) {
             }
 
             DynamicArray end;
-            dynamic_array_init(&end, arr->element_size, &typeRegistry[arr->type].type);
+            dynamic_array_init(&end, &typeRegistry[arr->type].type);
             dynamic_array_subset(&end, arr, index + 1, arr->len);
 
             // Cast the void* to a char* in order to get around pointer arithmetic being disallowed with void*
@@ -296,7 +297,7 @@ int dynamic_array_insert_array(DynamicArray* dest, DynamicArray* src, unsigned i
         }
 
         DynamicArray end;
-        dynamic_array_init(&end, dest->element_size, &DYNAMIC_ARRAY_TYPE(dest->type));
+        dynamic_array_init(&end, &DYNAMIC_ARRAY_TYPE(dest->type));
         dynamic_array_subset(&end, dest, index, dest->len);
 
         // Cast the void* to a char* in order to get around pointer arithmetic being disallowed with void*
@@ -328,7 +329,7 @@ int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigne
         }
 
         DynamicArray end;
-        dynamic_array_init(&end, arr->element_size, &DYNAMIC_ARRAY_TYPE(arr->type));
+        dynamic_array_init(&end, &DYNAMIC_ARRAY_TYPE(arr->type));
         dynamic_array_subset(&end, arr, to, arr->len);
 
         // Cast the void* to a char* in order to get around pointer arithmetic being disallowed with void*
@@ -362,7 +363,6 @@ int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigne
     }
 }
 
-// Finish later
 void* dynamic_array_get(DynamicArray* arr, int dimensions, ...) {
     va_list args;
     va_start(args, dimensions);
@@ -400,5 +400,53 @@ void* dynamic_array_get(DynamicArray* arr, int dimensions, ...) {
 
 int dynamic_array_deallocator(void* arr) {
     dynamic_array_free((DynamicArray*)arr);
+    return 0;
+}
+
+// Finish later
+int dynamic_array_create_nDimensions(DynamicArray* arr, string* type, int dimensions, ...) {
+    dynamic_array_free(arr);
+
+    va_list args;
+    va_start(args, dimensions);
+
+    // shape will store the sizes of the n dimensional array
+    DynamicArray shape;
+    dynamic_array_init(&shape, &STRING("int"));
+    for (int i = 0; i < dimensions; i++) {
+        dynamic_array_append(&shape, &INT(va_arg(args, int)));
+    }
+
+    va_end(args);
+    dynamic_array_free(&shape);
+    return 0;
+}
+
+int dynamic_array_resize(DynamicArray* arr, unsigned int size) {
+    if (size < arr->len) {
+        while (arr->len < size) {
+            dynamic_array_pop(arr);
+        }
+        arr->__memsize = size;
+        void* test = (void*)realloc(arr->buf, arr->__memsize * arr->element_size);
+
+        if (test == NULL) {
+            printf("Failed to allocate memory in dynamic_array_resize\n");
+            exit(-1);
+        }
+
+        arr->buf = test;
+    } else {
+        arr->__memsize = size;
+        void* test = (void*)realloc(arr->buf, arr->__memsize * arr->element_size);
+
+        if (test == NULL) {
+            printf("Failed to allocate memory in dynamic_array_resize\n");
+            exit(-1);
+        }
+
+        arr->buf = test;
+    }
+
     return 0;
 }
