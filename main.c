@@ -3,22 +3,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// This is required to be able to access these variables
-DYNAMIC_ARRAY_REGISTRY_ENABLE
-
 int main(void) {
     dynamic_array_registry_init();
 
     DynamicArray test;
-    dynamic_array_init(&test, &STRING("DynamicArray"));
-    dynamic_array_create_nDimensions(&test, &STRING("int"), 1, 10);
+    dynamic_array_init_nDimensions(&test, &STRING("int"), 3, INDEX(3, 10, 10));
 
-    for (int i = 0; i < 10; i++) {
-        dynamic_array_append(&test, &INT(i));
+    for (int i = 0; i < test.len; i++) {
+        int s1 = ((DynamicArray*)dynamic_array_get(&test, 1, INDEX(i)))->len;
+        for (int j = 0; j < s1; j++) {
+            int s2 = ((DynamicArray*)dynamic_array_get(&test, 2, INDEX(i, j)))->len;
+            for (int k = 0; k < s2; k++) {
+                dynamic_array_set(&test, 3, INDEX(i, j, k), &INT((i + 1) * 100 + (j + 1) * (k + 1)));
+            }
+        }
     }
 
     for (int i = 0; i < test.len; i++) {
-        printf("%d ", *(int*)dynamic_array_get(&test, 1, i));
+        int s1 = ((DynamicArray*)dynamic_array_get(&test, 1, INDEX(i)))->len;
+        for (int j = 0; j < s1; j++) {
+            int s2 = ((DynamicArray*)dynamic_array_get(&test, 2, INDEX(i, j)))->len;
+            for (int k = 0; k < s2; k++) {
+                printf("%5d", *(int*)dynamic_array_get(&test, 3, INDEX(i, j, k)));
+            }
+            printf("\n");
+        }
+        printf("\n------------------------------------------------------------------\n\n");
     }
 
     dynamic_array_free(&test);

@@ -24,6 +24,11 @@ typedef struct DynamicArray {
     unsigned int type;
 } DynamicArray;
 
+// This is used to make passing in indices to the dynamic_array_get and dynamic_array_set functions
+// nicer
+#define INDEX(...) \
+    (int[]){__VA_ARGS__}
+
 int dynamic_array_init(DynamicArray* arr, string* type);
 
 int dynamic_array_free(DynamicArray* arr);
@@ -58,15 +63,22 @@ int dynamic_array_insert_array(DynamicArray* dest, DynamicArray* src, unsigned i
 // top range
 int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigned int to);
 
-// Returns a pointer to the data in the specified dynamic array
-void* dynamic_array_get(DynamicArray* arr, int dimensions, ...);
+// Returns a pointer to the data in the specified dynamic array at the specified indices.
+// Note: size should match the number of elements in the indices pointer list
+// The INDEX macro makes passing in the index nicer for this function
+void* dynamic_array_get(DynamicArray* arr, int size, int* indices);
 
-// This will create an n dimensional array with the specified dimensions passed into the variadic part of the
-// function. This will be a homogenous ndimensional array
-int dynamic_array_create_nDimensions(DynamicArray* arr, string* type, int dimensions, ...);
+// Takes in an index array of the specified size (the index macro should be used for the indices parameter for ease of use)
+// and then a pointer to the data itself should be passed as well
+int dynamic_array_set(DynamicArray* arr, int size, int* indices, void* data);
 
-// Resizes the array to the specified size
-int dynamic_array_resize(DynamicArray* arr, unsigned int size);
+// This will create an n dimensional array with the specified number of dimensions
+// Note: the INDEX macro can be used to make passing in dimensions easier
+int dynamic_array_init_nDimensions(DynamicArray* arr, string* type, int dimensionsLen, int* dimensions);
+
+// Resizes the array to the specified size in memory, and also updating the length of the dynamic_array
+// if that is desired
+int dynamic_array_resize(DynamicArray* arr, unsigned int size, bool updateLen);
 
 typedef struct DynamicArrayType {
     string type;
