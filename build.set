@@ -26,9 +26,9 @@ profile : default = {
 
 profile : windows =  {
   src = [
-    src/main.c,
-    src/DynamicArray.c,
-    src/Strings.c
+    src\main.c,
+    src\DynamicArray.c,
+    src\Strings.c
   ]
 
   include = [
@@ -38,14 +38,16 @@ profile : windows =  {
   args = [
     /W4,
     /Zi,
-    /fsanitize=address
+    /fsanitize=address,
+    /Fo"build\\",
+    /Fd"build\\"
   ]
 
   compilerFormat = [msvc]
 
   compilerPath = [cl]
 
-  out = [build/main.exe]
+  out = [build\main.exe]
 }
 
 profile : no_asan = {
