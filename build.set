@@ -1,8 +1,12 @@
 profile : default = {
   src = [
-    main.c,
-    DynamicArray.c,
-    Strings.c
+    src/main.c,
+    src/DynamicArray.c,
+    src/Strings.c
+  ]
+
+  include = [
+    include
   ]
 
   args = [
@@ -17,14 +21,18 @@ profile : default = {
 
   compilerPath = [clang]
 
-  out = [main]
+  out = [build/main]
 }
 
 profile : windows =  {
   src = [
-    main.c,
-    DynamicArray.c,
-    Strings.c
+    src/main.c,
+    src/DynamicArray.c,
+    src/Strings.c
+  ]
+
+  include = [
+    include
   ]
 
   args = [
@@ -37,14 +45,18 @@ profile : windows =  {
 
   compilerPath = [cl]
 
-  out = [main.exe]
+  out = [build/main.exe]
 }
 
 profile : no_asan = {
   src = [
-    main.c,
-    DynamicArray.c,
-    Strings.c
+    src/main.c,
+    src/DynamicArray.c,
+    src/Strings.c
+  ]
+
+  include = [
+    include
   ]
 
   args = [
@@ -57,6 +69,33 @@ profile : no_asan = {
 
   compilerPath = [clang]
 
-  out = [main]
+  out = [build/main]
 
+}
+
+profile : macOS = {
+  src = [
+    src/main.c,
+    src/DynamicArray.c,
+    src/Strings.c
+  ]
+
+  include = [
+    include
+  ]
+
+  args = [
+    -Wall,
+    -Werror,
+    -g,
+    -fsanitize=address,
+    -arch, x86_64,
+    -arch, arm64
+  ]
+
+  compilerFormat = [gcc/clang]
+
+  compilerPath = [clang]
+
+  out = [build/main]
 }
