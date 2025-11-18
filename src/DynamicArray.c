@@ -363,13 +363,13 @@ int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigne
     }
 }
 
-void* dynamic_array_get(DynamicArray* arr, int size, int* indices) {
+void* dynamic_array_get(DynamicArray* arr, DynamicArray* indices) {
     unsigned int dynamic_array_type = dynamic_array_registry_get_typeID(&STRING("DynamicArray"));
 
     DynamicArray* temp = arr;
-    for (int i = 0; i < size - 1; i++) {
+    for (int i = 0; i < indices->len - 1; i++) {
         if (temp->type == dynamic_array_type) {
-            int index = indices[i];
+            int index = ((int*)indices->buf)[i];
             if (index >= 0 && index < temp->len) {
                 temp = (DynamicArray*)((char*)temp->buf + (index * temp->element_size));
             } else {
@@ -382,7 +382,7 @@ void* dynamic_array_get(DynamicArray* arr, int size, int* indices) {
         }
     }
 
-    int index = indices[size - 1];
+    int index = ((int*)indices->buf)[indices->len - 1];
     void* answer = NULL;
     if (index >= 0 && index < temp->len) {
         answer = (void*)((char*)temp->buf + (index * temp->element_size));
@@ -394,13 +394,13 @@ void* dynamic_array_get(DynamicArray* arr, int size, int* indices) {
     return answer;
 }
 
-int dynamic_array_set(DynamicArray* arr, int size, int* indices, void* data) {
+int dynamic_array_set(DynamicArray* arr, DynamicArray* indices, void* data) {
     unsigned int dynamic_array_type = dynamic_array_registry_get_typeID(&STRING("DynamicArray"));
 
     DynamicArray* temp = arr;
-    for (int i = 0; i < size - 1; i++) {
+    for (int i = 0; i < indices->len - 1; i++) {
         if (temp->type == dynamic_array_type) {
-            int index = indices[i];
+            int index = ((int*)indices->buf)[i];
             if (index >= 0 && index < temp->len) {
                 temp = (DynamicArray*)((char*)temp->buf + (index * temp->element_size));
             } else {
@@ -413,7 +413,7 @@ int dynamic_array_set(DynamicArray* arr, int size, int* indices, void* data) {
         }
     }
 
-    int index = indices[size - 1];
+    int index = ((int*)indices->buf)[indices->len - 1];
     if (index >= 0 && index < temp->len) {
         memcpy((char*)temp->buf + (index * temp->element_size), data, temp->element_size);
     } else {
@@ -429,16 +429,16 @@ int dynamic_array_deallocator(void* arr) {
     return 0;
 }
 
-int dynamic_array_init_nDimensions(DynamicArray* arr, string* type, int dimensionsLen, int* dimensions) {
-    if (dimensionsLen == 1) {
+int dynamic_array_init_nDimensions(DynamicArray* arr, string* type, DynamicArray* dimensions) {
+    if (dimensions->len == 1) {
         dynamic_array_init(arr, type);
-        dynamic_array_resize(arr, dimensions[0], true);
+        dynamic_array_resize(arr, ((int*)dimensions->buf)[0], true);
     } else {
         dynamic_array_init(arr, &STRING("DynamicArray"));
-        dynamic_array_resize(arr, dimensions[0], true);
+        dynamic_array_resize(arr, ((int*)dimensions->buf)[0], true);
 
         for (int i = 0; i < arr->len; i++) {
-            DynamicArray* temp = (DynamicArray*)dynamic_array_get(arr, 1, INDEX(i));
+            DynamicArray* temp = (DynamicArray*)dynamic_array_get(arr, &INDEX(i));
             if (temp == NULL) {
                 printf("Failed to initialize ndimensional array\n");
                 exit(-1);
@@ -447,7 +447,7 @@ int dynamic_array_init_nDimensions(DynamicArray* arr, string* type, int dimensio
             // This will recursively initialize the arrays until the final escape condition is met.
             // While doing so, it increments the dimensions pointer by 1 and decrements the dimensionsLen
             // by one as well
-            dynamic_array_init_nDimensions(temp, type, dimensionsLen - 1, &dimensions[1]);
+            dynamic_array_init_nDimensions(temp, type, &(DynamicArray){.len = dimensions->len - 1, .buf = ((int*)dimensions->buf) + 1, .element_size = sizeof(int), .type = 4, .__memsize = 0});
         }
     }
     return 0;

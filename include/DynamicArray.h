@@ -25,9 +25,9 @@ typedef struct DynamicArray {
 } DynamicArray;
 
 // This is used to make passing in indices to the dynamic_array_get and dynamic_array_set functions
-// nicer
+// nicer. Also should be used for the dyunamic_array_init_nDimensions function
 #define INDEX(...) \
-    (int[]){__VA_ARGS__}
+    (DynamicArray){.buf = (int[]){__VA_ARGS__}, .len = sizeof((int[]){__VA_ARGS__}) / sizeof(int), .element_size = sizeof(int), .__memsize = 0, .type = 4}
 
 int dynamic_array_init(DynamicArray* arr, string* type);
 
@@ -66,15 +66,15 @@ int dynamic_array_remove_selection(DynamicArray* arr, unsigned int from, unsigne
 // Returns a pointer to the data in the specified dynamic array at the specified indices.
 // Note: size should match the number of elements in the indices pointer list
 // The INDEX macro makes passing in the index nicer for this function
-void* dynamic_array_get(DynamicArray* arr, int size, int* indices);
+void* dynamic_array_get(DynamicArray* arr, DynamicArray* indices);
 
 // Takes in an index array of the specified size (the index macro should be used for the indices parameter for ease of use)
 // and then a pointer to the data itself should be passed as well
-int dynamic_array_set(DynamicArray* arr, int size, int* indices, void* data);
+int dynamic_array_set(DynamicArray* arr, DynamicArray* indices, void* data);
 
 // This will create an n dimensional array with the specified number of dimensions
 // Note: the INDEX macro can be used to make passing in dimensions easier
-int dynamic_array_init_nDimensions(DynamicArray* arr, string* type, int dimensionsLen, int* dimensions);
+int dynamic_array_init_nDimensions(DynamicArray* arr, string* type, DynamicArray* dimensions);
 
 // Resizes the array to the specified size in memory, and also updating the length of the dynamic_array
 // if that is desired
