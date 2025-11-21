@@ -101,3 +101,29 @@ profile : macOS = {
 
   out = [build/main]
 }
+
+profile : school = {
+  src = [
+    src\main.c,
+    src\DynamicArray.c,
+    src\Strings.c
+  ]
+
+  include = [
+    include
+  ]
+
+  args = [
+    -Wall,
+    -Werror,
+    -g,
+    -fsanitize=address,
+    -LSAN_OPTIONS=verbosity=1:log_threads=1
+  ]
+
+  compilerFormat = [gcc/clang]
+
+  compilerPath = [clang]
+
+  out = [build\main]
+}
