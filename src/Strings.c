@@ -75,6 +75,20 @@ int string_find(string* src, string* find) {
     return -1;
 }
 
+int string_find_with_offset(string* src, string* find, unsigned int offset) {
+    // It is necessary to add 1 to src->len - find->len since we want to make sure that i actually reaches
+    // the value of src->len - find->len, because the range of the final possible check that could be made in
+    // the buffer is [src->len - find->len, src->len).
+    for (int i = offset; i < src->len - find->len + 1; i++) {
+        if (memcmp(src->str + i, find->str, find->len) == 0) {
+            return i;
+        }
+    }
+
+    // Return -1 if the find string isn't found in the src string
+    return -1;
+}
+
 int string_compare(string* str1, string* str2) {
     if (str1->len == str2->len) {
         if (memcmp(str1->str, str2->str, str1->len) == 0) {

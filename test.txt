@@ -1,3 +1,4 @@
-int x = "First set of text";
-int y = "even more cool stuff";
-float z = "Third test for text";
+string str="Hello World";
+int x=1234;
+float z=2.346;
+int w =x+z+4321;

@@ -49,6 +49,11 @@ int string_substring(string* dest, string* src, unsigned int from, unsigned int 
 // if the find string is not found anywhere in src, then it will return -1
 int string_find(string* src, string* find);
 
+// Returns the index of the find string in the src string, if it exists.
+// the offset parameter specified how much the offset into the src string should be
+// if the find string is not found anywhere in src, then it will return -1
+int string_find_with_offset(string* src, string* find, unsigned int offset);
+
 // Using from as an offset, it will then proceed to insert the insert string
 // into the dest string, shifting all the other characters
 int string_insert(string* dest, string* insert, unsigned int from);

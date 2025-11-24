@@ -18,7 +18,7 @@ int string_deallocator(void* str) {
 
 int dynamic_array_registry_type_append(string* type, int (*deallocator)(void*), unsigned int size) {
     if (typeRegistryLen + 1 >= typeRegistryMemsize) {
-        // The typeRegistryMemsize will increase by 5 each time since I only expect the number of times to grow roughly linearly 
+        // The typeRegistryMemsize will increase by 5 each time since I only expect the number of times to grow roughly linearly
         typeRegistryMemsize += 5;
         typeRegistry = (DynamicArrayType*)realloc(typeRegistry, typeRegistryMemsize * sizeof(DynamicArrayType));
         if (typeRegistry == NULL) {
