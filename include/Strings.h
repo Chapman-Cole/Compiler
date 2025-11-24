@@ -10,14 +10,6 @@ typedef struct string {
     unsigned int __memsize;
 } string;
 
-// Always call this before using a string for any other functions
-#define STRING_INIT(x) ((x) = (string){.str = NULL, .len = 0, .__memsize = 1})
-
-// Call this macro when ready to free the contents of the string, and prepare for future use
-#define STRING_FREE(x)\
-    free((x).str);\
-    STRING_INIT((x));
-
 // This determines the max amount of characters that can be read from stdin in one go
 #define MAX_LINE_READ 5000
 
@@ -26,6 +18,17 @@ typedef struct string {
 // by the compiler as readonly memory. Thus, strings created with STRING() macro
 // should only be used in contexts where they are not modified
 #define STRING(x) ((string){.str = (x), .len = sizeof(x) / sizeof(x[0]) - 1 /*Subtract one because the sizeof(x) would include the null terminator*/, .__memsize = -1})
+
+// Always call this before using a string for any other functions
+inline void string_init(string* str) {
+    *str = (string){.str = NULL, .len = 0, .__memsize = 1};
+}
+
+// Call this function when ready to free the contents of the string, and prepare for future use
+inline void string_free(string* str) {
+    free(str->str);
+    *str = (string){.str = NULL, .len = 0, .__memsize = 1};
+}
 
 // Resizes the string to the given value, which will cause data loss if the new
 // size is less than the old size
@@ -61,5 +64,8 @@ int string_compare(string* str1, string* str2);
 // Reads from the standard input and updates the str string so contain the 
 // string read from the console
 int string_read_console(string* str);
+
+// Reads the file specified by the path string into the str string
+int string_read_file(string* str, string* path);
 
 #endif

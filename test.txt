@@ -1,0 +1,3 @@
+This is some practice test to see how well my function works
+This is another line to see how it handles multiline text
+blah blah blah blah

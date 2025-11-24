@@ -140,12 +140,6 @@ typedef union FundamentalType {
 #define LONG_DOUBLE(x) \
     (FundamentalType) { .ld = x }
 
-// Use this define at the top of the file near the include headers
-// in order to get access to the variables below
-#define DYNAMIC_ARRAY_REGISTRY_ENABLE    \
-    extern unsigned int typeRegistryLen; \
-    extern DynamicArrayType* typeRegistry;
-
 // This macro takes in a DynamicArray typeID (unsigned int) and allows
 // you to get the string version for potential use in print debugging
 #define DYNAMIC_ARRAY_TYPE(x) \

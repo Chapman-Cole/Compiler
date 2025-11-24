@@ -1,2 +1,2 @@
 CompileFlags:
-  Add: ["-I/home/hyprland/Programs"]
+  Add: ["-I/home/hyprland/Programs/C-Programs/Compiler/include"]

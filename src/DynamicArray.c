@@ -7,23 +7,28 @@
 
 // There is no need to free this memory because it is intended to last for the
 // entire lifetime of the program
-DynamicArrayType* typeRegistry = NULL;
 unsigned int typeRegistryLen = 0;
+unsigned int typeRegistryMemsize = 1;
+DynamicArrayType* typeRegistry = NULL;
 
 int string_deallocator(void* str) {
-    STRING_FREE(*((string*)str));
+    string_free((string*)str);
     return 0;
 }
 
 int dynamic_array_registry_type_append(string* type, int (*deallocator)(void*), unsigned int size) {
-    typeRegistry = (DynamicArrayType*)realloc(typeRegistry, (typeRegistryLen + 1) * sizeof(DynamicArrayType));
-    if (typeRegistry == NULL) {
-        printf("Failed to initialize/append type registry for DynamicArray type.");
-        exit(-1);
+    if (typeRegistryLen + 1 >= typeRegistryMemsize) {
+        // The typeRegistryMemsize will increase by 5 each time since I only expect the number of times to grow roughly linearly 
+        typeRegistryMemsize += 5;
+        typeRegistry = (DynamicArrayType*)realloc(typeRegistry, typeRegistryMemsize * sizeof(DynamicArrayType));
+        if (typeRegistry == NULL) {
+            printf("Failed to initialize/append type registry for DynamicArray type.");
+            exit(-1);
+        }
     }
 
     // Can't forget to register string before using it with other functions
-    STRING_INIT(typeRegistry[typeRegistryLen].type);
+    string_init(&typeRegistry[typeRegistryLen].type);
     typeRegistry[typeRegistryLen].typeID = typeRegistryLen;
     string_copy(&typeRegistry[typeRegistryLen].type, type);
     typeRegistry[typeRegistryLen].deallocator = deallocator;
@@ -61,7 +66,7 @@ int dynamic_array_registry_init(void) {
 
 int dynamic_array_registry_terminate(void) {
     for (int i = 0; i < typeRegistryLen; i++) {
-        STRING_FREE(typeRegistry[i].type);
+        string_free(&typeRegistry[i].type);
         typeRegistry[i].deallocator = NULL;
     }
 

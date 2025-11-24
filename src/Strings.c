@@ -1,7 +1,12 @@
 #include "Strings.h"
 #include <math.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
+
+
+extern void string_init(string* str);
+extern void string_free(string* str);
 
 // This implementation could definitely be better, but for now simply
 // exactly fitting the size of the buffer to the string is probably just fine
@@ -44,7 +49,7 @@ int string_substring(string* dest, string* src, unsigned int from, unsigned int 
     } else if (to == from) {
         // If the bounds are the same, it will just return an empty string,
         // which is signfified by the string pointer being NULL
-        STRING_FREE(*dest);
+        string_free(dest);
         return 0;
     } else if (to > src->len) {
         printf("string_substring::Range Error::Index Out of Bounds would have occurred\n");
@@ -84,14 +89,15 @@ int string_compare(string* str1, string* str2) {
 
 int string_insert(string* dest, string* insert, unsigned int from) {
     string lastThird;
-    STRING_INIT(lastThird);
+    string_init(&lastThird);
+
 
     string_substring(&lastThird, dest, from, dest->len);
     string_resize(dest, dest->len + insert->len);
     memcpy(dest->str + from, insert->str, insert->len);
     memcpy(dest->str + from + insert->len, lastThird.str, lastThird.len);
 
-    STRING_FREE(lastThird);
+    string_free(&lastThird);
     return 0;
 }
 
@@ -102,7 +108,7 @@ int string_find_replace(string* src, string* find, string* replace) {
         return false;
     } else {
         string lastThird;
-        STRING_INIT(lastThird);
+        string_init(&lastThird);
 
         string_substring(&lastThird, src, index + find->len, src->len);
         string_resize(src, src->len - find->len + replace->len);
@@ -110,7 +116,7 @@ int string_find_replace(string* src, string* find, string* replace) {
         memcpy(src->str + index, replace->str, replace->len);
         memcpy(src->str + index + replace->len, lastThird.str, lastThird.len);
 
-        STRING_FREE(lastThird);
+        string_free(&lastThird);
         return true;
     }
 }
@@ -133,5 +139,24 @@ int string_read_console(string* str) {
         str->str[0] = '\0';
     }
 
+    return 0;
+}
+
+int string_read_file(string* str, string* path) {
+    // Read as a binary file
+    FILE* fptr = fopen(path->str, "rb");
+    if (fptr == NULL) {
+        printf("string_read_file could not find the specified file\n");
+        exit(-1);
+    }
+
+    fseek(fptr, 0, SEEK_END);
+    int len = ftell(fptr) / sizeof(char);
+    fseek(fptr, 0, SEEK_SET);
+
+    string_resize(str, len);
+    fread(str->str, sizeof(char), str->len, fptr);
+
+    fclose(fptr);
     return 0;
 }
