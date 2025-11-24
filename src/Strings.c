@@ -160,3 +160,17 @@ int string_read_file(string* str, string* path) {
     fclose(fptr);
     return 0;
 }
+
+int string_compare_with_offset(string* strOffset, string* str2, unsigned int offset) {
+    if (str2->len + offset > strOffset->len) {
+        return false;
+    } else if (offset > strOffset->len) {
+        return false;
+    }
+
+    if (memcmp(strOffset->str + offset, str2->str, str2->len) == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}

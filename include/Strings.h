@@ -61,6 +61,11 @@ int string_find_replace(string* src, string* find, string* replace);
 // Returns true if the strings have the same value, and false otherwise
 int string_compare(string* str1, string* str2);
 
+// Allows you to specify an offset into the strOffset string when comparing the two strings
+// this means that it will rely on the length of the str2 string for the comparison, as it
+// is presumed larger in this case
+int string_compare_with_offset(string* strOffset, string* str2, unsigned int offset);
+
 // Reads from the standard input and updates the str string so contain the 
 // string read from the console
 int string_read_console(string* str);

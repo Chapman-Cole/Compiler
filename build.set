@@ -2,7 +2,8 @@ profile : default = {
   src = [
     src/main.c,
     src/DynamicArray.c,
-    src/Strings.c
+    src/Strings.c,
+    src/lexer.c
   ]
 
   include = [
@@ -28,7 +29,8 @@ profile : windows =  {
   src = [
     src\main.c,
     src\DynamicArray.c,
-    src\Strings.c
+    src\Strings.c,
+    src\lexer.c
   ]
 
   include = [
@@ -54,7 +56,8 @@ profile : no_asan = {
   src = [
     src/main.c,
     src/DynamicArray.c,
-    src/Strings.c
+    src/Strings.c,
+    src/lexer.c
   ]
 
   include = [
@@ -79,7 +82,8 @@ profile : macOS = {
   src = [
     src/main.c,
     src/DynamicArray.c,
-    src/Strings.c
+    src/Strings.c,
+    src/lexer.c
   ]
 
   include = [
@@ -106,7 +110,8 @@ profile : school = {
   src = [
     src\main.c,
     src\DynamicArray.c,
-    src\Strings.c
+    src\Strings.c,
+    src/lexer.c
   ]
 
   include = [
