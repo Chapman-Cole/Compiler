@@ -1,4 +1,7 @@
+// this is a comment
 string str="Hello World";
+//This is another comment
 int x=1234;
 float z=2.346;
 int w =x+z+4321;
+// A comment at the end of the line
