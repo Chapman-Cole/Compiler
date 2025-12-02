@@ -118,6 +118,20 @@ int lexer(DynamicArray* tokens, string* file) {
             for (int j = 0; j < LanguageReservedWords.len; j++) {
                 language_identifier* ldent = dynamic_array_get(&LanguageReservedWords, &INDEX(j));
                 if (string_compare_with_offset(file, &ldent->name, i)) {
+                    //Check for comments first, as those can be skipped
+                    if (ldent->type == LRES_COMMENT) {
+                        if (ldent->id == COMM_DSLASH) {
+                            // Account for length of double slashes by adding the length of the name of ldent
+                            int comm_end = i + ldent->name.len;
+                            for (int k = comm_end; k < file->len && file->str[k] != '\n'; k++) {
+                                comm_end++;
+                            }
+
+                            // The minus one is to account for the fact that i is incremented by one after this
+                            i = comm_end - 1;
+                            goto loop_exit;
+                        } 
+                    }
                     // For debugging purposes, the literal part of the token will contain the string name of the keyword
                     dynamic_array_append(tokens, &(token){.type = ldent->type, .id = ldent->id, .literal = ldent->name});
 
