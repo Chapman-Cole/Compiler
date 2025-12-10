@@ -2,9 +2,14 @@
 #include "Strings.h"
 #include "lexer.h"
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
-int main(void) {
+int main(int argc, char** argv) {
+    if (argc <= 1) {
+        return -1;
+    }
+
     dynamic_array_registry_init();
     lexer_module_init();
     
@@ -12,7 +17,7 @@ int main(void) {
     dynamic_array_init(&tokens, &STRING("token"));
     string file;
     string_init(&file);
-    string_read_file(&file, &STRING("test.txt"));
+    string_read_file(&file, &(string){.str = argv[1], .len = strlen(argv[1]), .__memsize = 0});
     lexer(&tokens, &file);
 
     for (int i = 0; i < tokens.len; i++) {

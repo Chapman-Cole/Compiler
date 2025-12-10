@@ -2,6 +2,8 @@
 #include "DynamicArray.h"
 #include "Strings.h"
 #include <stdbool.h>
+#include <stdint.h>
+#include <limits.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
@@ -140,14 +142,24 @@ int lexer(DynamicArray* tokens, string* file) {
                     if (ldent->type == LRES_KEYWORD && ldent->vtag == true) {
                         // Add 1 to account for expected space after variable keyword declaration: int x = 2; <- note the space between int and x
                         int start = i + ldent->name.len + 1;
-                        int ends[3];
+                        int ends[4];
                         // The three possible characters that could delimate the end of a variable declaration are a space, an equal sign,
-                        // or a semicolon. Unfortunately, these have to be hard coded in here
+                        // or a semicolon. Unfortunately, these have to be hard coded in here. Also, for functions the ( character has to be
+                        // added to the list of potential because function declarations look like int main(). 
                         ends[0] = string_find_with_offset(file, &STRING(" "), start);
                         ends[1] = string_find_with_offset(file, &STRING("="), start);
                         ends[2] = string_find_with_offset(file, &STRING(";"), start);
+                        ends[3] = string_find_with_offset(file, &STRING("("), start);
+
+                        // If ( is not found in the file, then ends[3] will have the value -1 because that is what the function will return.
+                        // This is problematic because then it will result in -1 being the smallest index, which is nonsensical
+                        // So, basically if ends[3] is less than 0, it is just made the integer maximum value in order to ensure it doesn't
+                        // interfere with finding the true ending index
+                        if (ends[3] < 0) {
+                            ends[3] = INT_MAX;
+                        }
                         // Whichever comes first is what will delimate the identifier
-                        int end = MIN(MIN(ends[0], ends[1]), ends[2]);
+                        int end = MIN(MIN(MIN(ends[0], ends[1]), ends[2]), ends[3]);
 
                         string s1, s2;
                         string_init(&s1);
