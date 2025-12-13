@@ -56,7 +56,7 @@ int lexer_module_terminate(void) {
     return 0;
 }
 
-int lexer(DynamicArray* tokens, string* file) {
+int lexer(DynamicArray* tokens, DynamicArray* knownIdentifiers, string* file) {
     // Very important for tokens dynamic array to actually be an array of tokens
     if (tokens->type != dynamic_array_registry_get_typeID(&STRING("token"))) {
         dynamic_array_free(tokens);
@@ -73,8 +73,10 @@ int lexer(DynamicArray* tokens, string* file) {
     // the identifiers themselves will be determined based on variable declaration,
     // like int x, float y, or string str. Thus, after a variable keyword, identifier
     // is expected. This is the primary heuristic for determining identifiers
-    DynamicArray knownIdentifiers;
-    dynamic_array_init(&knownIdentifiers, &STRING("string"));
+    if (knownIdentifiers->type != dynamic_array_registry_get_typeID(&STRING("string"))) {
+        dynamic_array_free(knownIdentifiers);
+        dynamic_array_init(knownIdentifiers, &STRING("string"));
+    }
 
     for (int i = 0; i < file->len; i++) {
         // Looks for the string literals
@@ -168,7 +170,7 @@ int lexer(DynamicArray* tokens, string* file) {
                         string_copy(&s2, &s1);
 
                         dynamic_array_append(tokens, &(token){.type = LRES_IDENTIFIER, .literal = s1});
-                        dynamic_array_append(&knownIdentifiers, &s2);
+                        dynamic_array_append(knownIdentifiers, &s2);
 
                         // Allows for skipping of redudant checks
                         // the minus one is to account for the iteration of i by one at the end of the loop
@@ -184,8 +186,8 @@ int lexer(DynamicArray* tokens, string* file) {
             }
 
             // Searches for the known identifiers (the ones that have already been declared)
-            for (int j = 0; j < knownIdentifiers.len; j++) {
-                string* identifier = dynamic_array_get(&knownIdentifiers, &INDEX(j));
+            for (int j = 0; j < knownIdentifiers->len; j++) {
+                string* identifier = dynamic_array_get(knownIdentifiers, &INDEX(j));
                 if (string_compare_with_offset(file, identifier, i)) {
                     string s3;
                     string_init(&s3);
@@ -204,6 +206,5 @@ int lexer(DynamicArray* tokens, string* file) {
         prevQuoteCount = quoteCount;
     }
 
-    dynamic_array_free(&knownIdentifiers);
     return 0;
 }

@@ -99,6 +99,8 @@ int lexer_module_terminate(void);
 // The file string also needs to be initialized so that references to strings within
 // the file can be made later on if needed (this is mostly for debugging)
 // the string containing the code should already be loaded into the file string before being passed into the lexer
-int lexer(DynamicArray* tokens, string* file);
+// knownIdentifiers should an initiailized, empty array of strings that will contain all of the known identifiers
+// This is useful for the parsing part of the compiler
+int lexer(DynamicArray* tokens, DynamicArray* knownIdentifiers, string* file);
 
 #endif

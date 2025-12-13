@@ -15,10 +15,14 @@ int main(int argc, char** argv) {
     
     DynamicArray tokens;
     dynamic_array_init(&tokens, &STRING("token"));
+
+    DynamicArray identifiers;
+    dynamic_array_init(&identifiers, &STRING("string"));
+
     string file;
     string_init(&file);
     string_read_file(&file, &(string){.str = argv[1], .len = strlen(argv[1]), .__memsize = 0});
-    lexer(&tokens, &file);
+    lexer(&tokens, &identifiers, &file);
 
     for (int i = 0; i < tokens.len; i++) {
         token* tok = dynamic_array_get(&tokens, &INDEX(i));
@@ -36,6 +40,7 @@ int main(int argc, char** argv) {
     }
     
     dynamic_array_free(&tokens);
+    dynamic_array_free(&identifiers);
     string_free(&file);
     lexer_module_terminate();
     dynamic_array_registry_terminate();
