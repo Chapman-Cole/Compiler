@@ -44,7 +44,8 @@ enum Keywords {
     KEY_IF,
     KEY_WHILE,
     KEY_FOR,
-    KEY_RETURN
+    KEY_RETURN,
+    KEY_STRING
 };
 
 enum Punctuators {

@@ -26,7 +26,7 @@ int lexer_module_init(void) {
     // The keywords are being appended below
     dynamic_array_append(&LanguageReservedWords, &(language_identifier){.type = LRES_KEYWORD, .id = KEY_INT, .name = STRING("int"), .vtag = true});
     dynamic_array_append(&LanguageReservedWords, &(language_identifier){.type = LRES_KEYWORD, .id = KEY_FLOAT, .name = STRING("float"), .vtag = true});
-    dynamic_array_append(&LanguageReservedWords, &(language_identifier){.type = LRES_KEYWORD, .id = KEY_FLOAT, .name = STRING("string"), .vtag = true});
+    dynamic_array_append(&LanguageReservedWords, &(language_identifier){.type = LRES_KEYWORD, .id = KEY_STRING, .name = STRING("string"), .vtag = true});
     dynamic_array_append(&LanguageReservedWords, &(language_identifier){.type = LRES_KEYWORD, .id = KEY_FOR, .name = STRING("for"), .vtag = false});
     dynamic_array_append(&LanguageReservedWords, &(language_identifier){.type = LRES_KEYWORD, .id = KEY_IF, .name = STRING("if"), .vtag = false});
     dynamic_array_append(&LanguageReservedWords, &(language_identifier){.type = LRES_KEYWORD, .id = KEY_WHILE, .name = STRING("while"), .vtag = false});
