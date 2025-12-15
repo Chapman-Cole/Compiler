@@ -1,9 +1,26 @@
 #include "parser.h"
 #include "DynamicArray.h"
+#include "Strings.h"
 #include "lexer.h"
 
+int ast_module_init(void) {
+    dynamic_array_registry_type_append(&STRING("AST"), ast_deallocator, sizeof(AST));
+    return 0;
+}
+
+int ast_deallocator(void* ast) {
+    dynamic_array_free(&((AST*)ast)->branches);
+    string_free(&((AST*)ast)->name);
+    return 0;
+}
+
+int ast_init(AST* ast) {
+    dynamic_array_init(&ast->branches, &STRING("AST"));
+    return 0;
+}
+
 // Takes in an array of tokens and the string for the original source file for debugging purposes
-int ast_generate(DynamicArray *tokens, string *file) {
+int ast_generate(AST* ast, DynamicArray *tokens, string *file) {
     // List of general heuristics used to figure out the structure of the AST
     // Should include things like figuring out variable declaration from a list of tokens like keyword + identifier + keyword + literal
     for (int i = 0; i < tokens->len; i++) {

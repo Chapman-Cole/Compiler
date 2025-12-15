@@ -18,7 +18,8 @@ enum AST_types {
     AST_STRING_CONSTANT,
     AST_BRANCH,
     AST_WHILE,
-    AST_FOR
+    AST_FOR,
+    AST_ROOT
 };
 
 typedef struct AST {
@@ -33,6 +34,20 @@ typedef struct AST {
     unsigned int data;
 } AST;
 
-int ast_generate(DynamicArray* tokens, string* file);
+// Should be called only once in the lifetime of a program before using the parser functions
+// It basically just initializes some critical values for this module to work properly
+int ast_module_init(void);
+
+// For use within the initialization of the AST struct into the dynamic array type registry
+int ast_deallocator(void* ast);
+
+// Should be called before using any functions that involve an abstract syntax tree
+int ast_init(AST* ast);
+
+// Generates the actual abstract syntax tree 
+int ast_generate(AST* ast, DynamicArray* tokens, string* file);
+
+// Determines what the current node type is at the given index. Returns 
+unsigned int ast_determine_node_type(DynamicArray* tokens, string* file, unsigned int offset);
 
 #endif
