@@ -45,11 +45,6 @@ int ast_deallocator(void* ast);
 int ast_init(AST* ast);
 
 // Generates the actual abstract syntax tree 
-int ast_generate(AST* ast, DynamicArray* tokens, string* file);
-
-// Determines what the current node type is at the given index. Returns an unsigned integer that
-// corresponds to an entry in the AST_types enum. Note: the offset is an offset into the tokens
-// dynamic array
-unsigned int ast_determine_node_type(DynamicArray* tokens, string* file, unsigned int offset);
+int ast_generate(AST* ast, DynamicArray* tokens, DynamicArray* identifiers, string* file);
 
 #endif

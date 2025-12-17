@@ -16,11 +16,13 @@ int ast_deallocator(void* ast) {
 
 int ast_init(AST* ast) {
     dynamic_array_init(&ast->branches, &STRING("AST"));
+    string_init(&ast->name);
+    ast->type = AST_ROOT;
     return 0;
 }
 
 // Takes in an array of tokens and the string for the original source file for debugging purposes
-int ast_generate(AST* ast, DynamicArray *tokens, string *file) {
+int ast_generate(AST* ast, DynamicArray *tokens, DynamicArray* identifiers, string *file) {
     // List of general heuristics used to figure out the structure of the AST
     // Should include things like figuring out variable declaration from a list of tokens like keyword + identifier + keyword + literal
     for (int i = 0; i < tokens->len; i++) {

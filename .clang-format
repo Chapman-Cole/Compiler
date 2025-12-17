@@ -1,3 +1,5 @@
 BasedOnStyle: LLVM # You can base your style on a predefined one like LLVM, Google, etc.
 IndentWidth: 4     # Set your preferred indentation width (e.g., 4 spaces)
 IndentCaseLabels: true # Indent 'case' labels one level from the 'switch' statement
+ColumnLimit: 0
+PointerAlignment: Left
