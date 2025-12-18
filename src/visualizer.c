@@ -11,6 +11,8 @@ typedef struct text_box {
     Vector2 dimensions;
     Vector2 pos;
     string text;
+    // font_size is relative height of the text_box container for
+    // easier scaling
     float font_size;
     // The positioning of the text in the box based on
     // one of the values in the text_box_positions enum
@@ -40,7 +42,7 @@ int text_box_set_font(text_box* tbox, string path);
 
 int text_box_destroy(text_box* tbox);
 
-int text_box_render(text_box* tbox, Vector2 transform, float zoom);
+int text_box_render(text_box* tbox, Vector2 parentDimensions, Vector2 transform, float zoom);
 
 float lerp(float a, float b, float t) {
     return a + t * (b - a);
@@ -51,13 +53,13 @@ int height = 450;
 float aspect_ratio = (float)450 / (float)800;
 
 bool leftClickHold = false;
-Vector2 prevMouse = { 0.0f, 0.0f };
-Vector2 currMouse = { 0.0f, 0.0f };
-Vector2 prevView = { 0.0f, 0.0f };
-float scroll_factor = 0.075f;
+Vector2 prevMouse = {0.0f, 0.0f};
+Vector2 currMouse = {0.0f, 0.0f};
+Vector2 prevView = {0.0f, 0.0f};
+float scroll_factor = 0.1f;
 
 // Used for translation later on
-Vector2 viewPos = { 0.0f, 0.0f };
+Vector2 viewPos = {0.0f, 0.0f};
 
 float zoom_factor = 1.0f;
 
@@ -97,10 +99,9 @@ int main(void) {
 
             currMouse = GetMousePosition();
 
-            viewPos = (Vector2){ 
+            viewPos = (Vector2){
                 .x = prevView.x + scroll_factor * (prevMouse.x - currMouse.x),
-                .y = prevView.y + scroll_factor * (prevMouse.y - currMouse.y)
-            };
+                .y = prevView.y + scroll_factor * (prevMouse.y - currMouse.y)};
 
         } else {
             leftClickHold = false;
@@ -115,9 +116,9 @@ int main(void) {
         }
 
         ClearBackground((Color){203, 195, 227, 150});
-        text_box_render(&rect, (Vector2){0.0f, 0.0f}, 1.0f);
-        text_box_render(&text, viewPos, zoom_factor);
-        text_box_render(&text2, viewPos, zoom_factor);
+        text_box_render(&rect, (Vector2){width, height}, (Vector2){0.0f, 0.0f}, 1.0f);
+        text_box_render(&text, (Vector2){width, height}, viewPos, zoom_factor);
+        text_box_render(&text2, (Vector2){width, height}, viewPos, zoom_factor);
 
         EndDrawing();
     }
@@ -137,8 +138,8 @@ int text_box_init(text_box* tbox, string text) {
     tbox->background = WHITE;
     tbox->font = GetFontDefault();
     tbox->font_size = 12.0f;
-    tbox->pos = (Vector2){ .x = 50, .y = 50 };
-    tbox->dimensions = (Vector2){ .x = 30, .y = 30};
+    tbox->pos = (Vector2){.x = 50, .y = 50};
+    tbox->dimensions = (Vector2){.x = 30, .y = 30};
     tbox->padding = 0.0f;
     tbox->text_color = BLACK;
     tbox->text_pos = TBOX_CENTER;
@@ -156,17 +157,18 @@ int text_box_destroy(text_box* tbox) {
     return 0;
 }
 
-int text_box_render(text_box* tbox, Vector2 transform, float zoom) {
+int text_box_render(text_box* tbox, Vector2 parentDimensions, Vector2 transform, float zoom) {
     // DrawRectangle refers to the top left corner in raylib, so transformations
     // must be done to make it refer to the center of the rectangle (text box)
-    float width_transl = (int)((tbox->dimensions.x / 100.0f * zoom) * (float)width * aspect_ratio);
-    float height_transl = (int)((tbox->dimensions.y / 100.0f * zoom) * (float)height);
-    float x_transl = (int)(((tbox->pos.x - transform.x)) / 100.0f * (float)width) - (width_transl / 2.0f);
-    float y_transl = (int)(((tbox->pos.y - transform.y)) / 100.0f * (float)height) - (height_transl / 2.0f);
+    float width_transl = (tbox->dimensions.x / 100.0f * zoom) * parentDimensions.x * aspect_ratio;
+    float height_transl = (tbox->dimensions.y / 100.0f * zoom) * parentDimensions.y;
+    float x_transl = ((tbox->pos.x - transform.x)) / 100.0f * parentDimensions.x - (width_transl / 2.0f);
+    float y_transl = ((tbox->pos.y - transform.y)) / 100.0f * parentDimensions.y - (height_transl / 2.0f);
 
     // Make font_size relative for better scaling
-    float font_scaling_constant = 0.002f;
-    int font_size_transl = (int)((float)tbox->font_size * (float)height * font_scaling_constant * zoom);
+    float font_scaling_constant = 0.01f;
+    // int font_size_transl = (int)((float)tbox->font_size * (float)height * font_scaling_constant * zoom);
+    float font_size_transl = tbox->font_size * height_transl * font_scaling_constant;
 
     DrawRectangle(x_transl, y_transl, width_transl, height_transl, tbox->background);
     switch (tbox->text_pos) {
