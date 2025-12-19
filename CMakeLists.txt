@@ -7,3 +7,14 @@ target_include_directories(main
   PUBLIC
     src/
 )
+
+# --------------------------------------------------------------------------
+
+add_executable(visualizer src/visualizer.c src/DynamicArray.c src/Strings.c)
+
+target_include_directories(visualizer
+  PUBLIC
+    src/
+)
+
+target_link_libraries(visualizer PRIVATE raylib m)
