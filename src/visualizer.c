@@ -7,6 +7,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+// Example emscripten compilation: emcc -o visualizer.html src/visualizer.c src/DynamicArray.c src/Strings.c -I/src -I/home/Cole/Programs/raylib/src -L/home/Cole/Programs/raylib/src -l:libraylib.web.a -lm -s USE_GLFW=3 -s WASM=1 -s ASYNCIFY -s GL_ENABLE_GET_PROC_ADDRESS=1
+// Note: in order for this to work, a localhost will have to be performed, such as by doing python -m http.server
+
+#if defined(PLATFORM_WEB)
+    #include <emscripten/emscripten.h>
+#endif
+
 // x_pos and y_pos refer to the center of the text_box
 // everything is based on percentages, except for font size, to make scaling work properly
 typedef struct text_box {
@@ -59,8 +66,13 @@ Vector2 currMouse = {0.0f, 0.0f};
 Vector2 prevView = {0.0f, 0.0f};
 float drag_factor = 0.8f;
 float scroll_factor = 0.2f;
+Camera2D camera = {0};
+text_box text, text2, rect;
+
 
 DynamicArray fonts;
+
+void UpdateDrawFrame(void);
 
 int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -77,76 +89,29 @@ int main(void) {
     dynamic_array_append(&fonts, &font1);
     dynamic_array_append(&fonts, &font2);
 
-    text_box text;
     text_box_init(&text, STRING("Sample Text\nNewline"));
     text.pos = (Vector2){25, 50};
     text.font = (Font*)dynamic_array_get(&fonts, &INDEX(1));
 
-    text_box text2;
     text_box_init(&text2, STRING("Some Sample\nText!"));
     text2.pos = (Vector2){75, 50};
     text2.font = (Font*)dynamic_array_get(&fonts, &INDEX(2));
 
-    text_box rect;
     text_box_init(&rect, STRING(""));
     rect.background = (Color){255, 128, 128, 255};
 
-    Camera2D camera = {0};
     camera.target = (Vector2){0.0f, 0.0f};
     camera.offset = (Vector2){0.0f, 0.0f};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 
+    #if defined(PLATFORM_WEB)
+        emscripten_set_main_loop(UpdateDrawFrame, 0, 1);
+    #else
     while (!WindowShouldClose()) {
-        if (IsWindowResized()) {
-            width = GetScreenWidth();
-            height = GetScreenHeight();
-            aspect_ratio = (float)height / (float)width;
-        }
-
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            if (leftClickHold == false) {
-                prevMouse = GetScreenToWorld2D(GetMousePosition(), camera);
-                prevView = camera.target;
-                leftClickHold = true;
-            }
-
-            currMouse = GetScreenToWorld2D(GetMousePosition(), camera);
-
-            camera.target = (Vector2){
-                .x = prevView.x + drag_factor * (prevMouse.x - currMouse.x),
-                .y = prevView.y + drag_factor * (prevMouse.y - currMouse.y)};
-
-        } else {
-            leftClickHold = false;
-        }
-
-        float mouseScroll = GetMouseWheelMove();
-        if (mouseScroll != 0) {
-            Vector2 mousePos = GetMousePosition();
-            Vector2 preMousePos = GetScreenToWorld2D(mousePos, camera);
-
-            camera.target = Vector2Subtract(camera.target, preMousePos);
-            camera.zoom = Clamp(expf(logf(camera.zoom) + scroll_factor * mouseScroll), 0.125f, 64.0f);
-            Vector2 postMousePos = GetScreenToWorld2D(mousePos, camera);
-            camera.target = Vector2Add(camera.target, preMousePos);
-            camera.target = Vector2Subtract(camera.target, postMousePos);
-         }
-
-        BeginDrawing();
-
-        ClearBackground((Color){203, 195, 227, 150});
-
-        BeginMode2D(camera);
-
-        text_box_render(&rect);
-        text_box_render(&text);
-        text_box_render(&text2);
-
-        EndMode2D();
-
-        EndDrawing();
+        UpdateDrawFrame();
     }
+    #endif
 
     CloseWindow();
     text_box_destroy(&text);
@@ -225,4 +190,45 @@ int text_box_render(text_box* tbox) {
     }
 
     return 0;
+}
+
+void UpdateDrawFrame(void) {
+    if (IsWindowResized()) {
+        width = GetScreenWidth();
+        height = GetScreenHeight();
+        aspect_ratio = (float)height / (float)width;
+    }
+
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        Vector2 mouse_delta = GetMouseDelta();
+
+        camera.offset.x += mouse_delta.x * drag_factor;
+        camera.offset.y += mouse_delta.y * drag_factor;
+    } 
+
+    float mouseScroll = GetMouseWheelMove();
+    if (mouseScroll != 0) {
+        Vector2 mousePos = GetMousePosition();
+        Vector2 preMousePos = GetScreenToWorld2D(mousePos, camera);
+
+        camera.target = Vector2Subtract(camera.target, preMousePos);
+        camera.zoom = Clamp(expf(logf(camera.zoom) + scroll_factor * mouseScroll), 0.125f, 64.0f);
+        Vector2 postMousePos = GetScreenToWorld2D(mousePos, camera);
+        camera.target = Vector2Add(camera.target, preMousePos);
+        camera.target = Vector2Subtract(camera.target, postMousePos);
+    }
+
+    BeginDrawing();
+
+    ClearBackground((Color){203, 195, 227, 150});
+
+    BeginMode2D(camera);
+
+    text_box_render(&rect);
+    text_box_render(&text);
+    text_box_render(&text2);
+
+    EndMode2D();
+
+    EndDrawing();
 }
