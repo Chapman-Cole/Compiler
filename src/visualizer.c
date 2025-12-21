@@ -80,6 +80,8 @@ DynamicArray text_boxes;
 
 DynamicArray fonts;
 
+bool continueLoop = true;
+
 void UpdateDrawFrame(void);
 
 int main(void) {
@@ -120,7 +122,7 @@ int main(void) {
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 0, 1);
 #else
-    while (!WindowShouldClose()) {
+    while (WindowShouldClose() != true && continueLoop == true) {
         UpdateDrawFrame();
     }
 #endif
@@ -311,6 +313,5 @@ void UpdateDrawFrame(void) {
 
     EndMode2D();
 
-    //EndBlendMode();
     EndDrawing();
 }

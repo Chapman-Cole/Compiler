@@ -12,9 +12,14 @@ target_include_directories(main
 
 add_executable(visualizer src/visualizer.c src/DynamicArray.c src/Strings.c)
 
-target_include_directories(visualizer PRIVATE src/ /home/Cole/Programs/raylib/src/)
-
-target_link_libraries(visualizer PRIVATE /home/Cole/Programs/raylib/build/libraylib.a m)
+if(WIN32)
+    target_include_directories(visualizer PRIVATE src/ C:/raylib/raylib/src/)
+    #For some reason you need \\\\ to get a single slash
+    target_link_libraries(visualizer PRIVATE "C:\\\\raylib\\\\raylib\\\\src\\\\libraylib.a" gdi32 winmm)
+else()
+    target_include_directories(visualizer PRIVATE src/ /home/Cole/Programs/raylib/src/)
+    target_link_libraries(visualizer PRIVATE /home/Cole/Programs/raylib/build/libraylib.a m)
+endif()
 
 # ---------------------------------------------------------------------------
 
