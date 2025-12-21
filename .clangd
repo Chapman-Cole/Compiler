@@ -1,3 +1,4 @@
 CompileFlags:
     Add:
       - "-I./src/"
+      - "-I/home/Cole/Programs/raylib/src/"

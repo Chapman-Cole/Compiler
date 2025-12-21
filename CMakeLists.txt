@@ -12,9 +12,20 @@ target_include_directories(main
 
 add_executable(visualizer src/visualizer.c src/DynamicArray.c src/Strings.c)
 
-target_include_directories(visualizer
-  PUBLIC
-    src/
+target_include_directories(visualizer PRIVATE src/ /home/Cole/Programs/raylib/src/)
+
+target_link_libraries(visualizer PRIVATE /home/Cole/Programs/raylib/build/libraylib.a m)
+
+# ---------------------------------------------------------------------------
+
+add_executable(webtarget src/visualizer.c src/DynamicArray.c src/Strings.c)
+
+set_target_properties(webtarget PROPERTIES
+  SUFFIX ".html"
+  OUTPUT_NAME "visualizer"
+  LINK_FLAGS "-s WASM=1 -s USE_GLFW=3 -s ASYNCIFY"
 )
 
-target_link_libraries(visualizer PRIVATE raylib m)
+target_include_directories(webtarget PRIVATE src/ /home/Cole/Programs/raylib/src/)
+
+target_link_libraries(webtarget PRIVATE /home/Cole/Programs/raylib/src/libraylib.web.a m)
